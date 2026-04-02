@@ -51,7 +51,13 @@ Each exploration typically includes:
 
 ## License
 
-This work is shared under the MIT License - see the [LICENSE](LICENSE) file for details.
+This work is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International License](http://creativecommons.org/licenses/by-nc/4.0/) - see the [LICENSE](LICENSE) file for details.
+
+**What this means:**
+- ✅ You can use, modify, and share this work for educational, research, and personal projects
+- ✅ You must provide appropriate attribution to the original author
+- ❌ Commercial use is not permitted without explicit permission
+- 📚 Perfect for academic research, learning, and non-commercial exploration
 
 ## Contact
 
