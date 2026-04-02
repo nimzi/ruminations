@@ -1,36 +1,56 @@
-# Mathematical and Computing Ruminations
+# Mathematical Ruminations
 
-A collection of thoughts, explorations, and experiments at the intersection of mathematics and computing.
+A collection of mathematical explorations and AI-assisted investigations.
 
 ## About
 
-This repository serves as a digital notebook for my ongoing investigations into mathematical concepts, computational methods, and their fascinating interconnections. Here you'll find:
+This repository contains mathematical investigations, particularly focusing on AI-assisted mathematical exposition and derivations. The work demonstrates how different AI systems approach mathematical problems and can provide complementary perspectives on the same concepts.
 
-- **Mathematical Explorations**: Deep dives into various mathematical topics, from pure theory to applied problems
-- **Computational Experiments**: Code implementations of mathematical concepts and algorithms
-- **Research Notes**: Documentation of interesting findings, conjectures, and open questions
-- **Learning Journey**: Records of my exploration into new mathematical and computational territories
-- **AI-Assisted Research**: Collaborative investigations with AI systems (Claude, ChatGPT) exploring how artificial intelligence can enhance mathematical exposition, provide alternative derivations, and offer new pedagogical perspectives
+## Current Work
 
-## Structure
+### Dihedral Angle of the Regular Dodecahedron
 
-The repository is organized to facilitate both discovery and systematic study:
+Two complementary AI-assisted derivations of the dihedral angle of the regular dodecahedron, showcasing different mathematical presentation styles and pedagogical approaches.
 
-- `explorations/` - Individual mathematical investigations and their computational implementations
-- `notes/` - Research notes, observations, and theoretical discussions
-- `experiments/` - Computational experiments and algorithm implementations
-- `resources/` - Useful references, papers, and external materials
-- `tools/` - Utility scripts and computational aids
+#### Claude's Analytical Approach
+**File**: `dihedral_claude.tex`
+
+A comprehensive analytical derivation using pentagon folding and Rodrigues' rotation formula. This approach emphasizes:
+
+- Rigorous coordinate geometry setup with three regular pentagons sharing a common vertex
+- Detailed application of Rodrigues' rotation formula for 3D rotations
+- Exploitation of mirror symmetry to reduce the vector equation to a scalar problem
+- Step-by-step analytical solution yielding δ = π - arctan(2) ≈ 116.57°
+- Both analytical proof and numerical verification for completeness
+
+#### ChatGPT's Educational Approach  
+**Files**: `dihedral_chatgpt.tex`, `dihedral_chatgpt.pdf`
+
+An alternative educational derivation with enhanced visual presentation and pedagogical structure. This approach features:
+
+- Clean, modern LaTeX formatting with color-coded elements
+- Structured presentation optimized for learning and comprehension
+- Alternative mathematical pathways to the same fundamental result
+- Enhanced visual aids and geometric intuition
+- Complementary perspective on the same geometric problem
+
+**Key concepts**: Regular polyhedra, dihedral angles, Rodrigues' rotation formula, golden ratio geometry, pentagon folding, AI-assisted mathematical exposition
+
+**Note**: Both derivations arrive at the same mathematical result (δ = π - arctan(2) ≈ 116.565°) but demonstrate how different AI systems approach mathematical exposition, offering valuable insights into AI-assisted mathematical writing and pedagogy.
+
+## Future Directions
+
+- Extension to other Platonic solids
+- Relationship between dihedral angles and vertex configurations
+- Computational verification using 3D geometry libraries
+- Visualization of the folding process
+- Comparative studies of AI-assisted mathematical exposition
 
 ## Topics of Interest
 
-Some areas I frequently explore:
-
-- **Pure Mathematics**: Number theory, abstract algebra, topology, analysis
-- **Applied Mathematics**: Optimization, numerical methods, mathematical modeling
-- **Computer Science**: Algorithms, complexity theory, computational geometry
-- **Interdisciplinary**: Mathematical physics, cryptography, machine learning theory
+- **Pure Mathematics**: Geometry, analysis, number theory
 - **AI-Enhanced Mathematics**: Exploring how AI systems can assist in mathematical research, provide alternative derivations, and enhance mathematical communication
+- **Mathematical Exposition**: Comparing different approaches to presenting mathematical concepts
 
 ## Contributing
 

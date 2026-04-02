@@ -96,7 +96,7 @@ dmypy.json
 ehthumbs.db
 Thumbs.db
 
-# LaTeX
+# LaTeX auxiliary files (keep PDFs and TEX source)
 *.aux
 *.bbl
 *.blg
