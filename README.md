@@ -10,6 +10,7 @@ This repository serves as a digital notebook for my ongoing investigations into 
 - **Computational Experiments**: Code implementations of mathematical concepts and algorithms
 - **Research Notes**: Documentation of interesting findings, conjectures, and open questions
 - **Learning Journey**: Records of my exploration into new mathematical and computational territories
+- **AI-Assisted Research**: Collaborative investigations with AI systems (Claude, ChatGPT) exploring how artificial intelligence can enhance mathematical exposition, provide alternative derivations, and offer new pedagogical perspectives
 
 ## Structure
 
@@ -29,6 +30,7 @@ Some areas I frequently explore:
 - **Applied Mathematics**: Optimization, numerical methods, mathematical modeling
 - **Computer Science**: Algorithms, complexity theory, computational geometry
 - **Interdisciplinary**: Mathematical physics, cryptography, machine learning theory
+- **AI-Enhanced Mathematics**: Exploring how AI systems can assist in mathematical research, provide alternative derivations, and enhance mathematical communication
 
 ## Contributing
 
