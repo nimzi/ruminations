@@ -1,0 +1,428 @@
+\documentclass[12pt, a4paper]{article}
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{mdframed}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{titlesec}
+
+\geometry{margin=2.5cm}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    urlcolor=blue!70!black
+}
+
+\definecolor{boxbg}{RGB}{240, 246, 255}
+\definecolor{boxborder}{RGB}{70, 130, 200}
+
+\newmdenv[
+  backgroundcolor=boxbg,
+  linecolor=boxborder,
+  linewidth=1.5pt,
+  roundcorner=5pt,
+  innertopmargin=8pt,
+  innerbottommargin=8pt,
+  innerleftmargin=12pt,
+  innerrightmargin=12pt
+]{keybox}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem*{remark}{Remark}
+
+\titleformat{\section}{\large\bfseries\color{blue!70!black}}{{\thesection}}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{{\thesubsection}}{1em}{}
+
+\title{
+    \vspace{-1cm}
+    {\Large \textbf{The Moore--Penrose Pseudoinverse}}\\[0.4em]
+    {\large Foundations, Derivations, and Connection to SVD}
+}
+\author{}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+% ─────────────────────────────────────────────
+\section{Motivation}
+
+A fundamental problem in linear algebra is solving the system
+\[
+    A\mathbf{x} = \mathbf{b}
+\]
+When $A \in \mathbb{R}^{n \times n}$ is square and invertible, the unique solution is $\mathbf{x} = A^{-1}\mathbf{b}$.
+However, in many practical settings:
+
+\begin{itemize}
+    \item $A$ is \textbf{rectangular} (more equations than unknowns, or vice versa), so no square inverse exists.
+    \item $A$ is \textbf{rank-deficient}, making it singular even if square.
+    \item The system is \textbf{overdetermined} (no exact solution) or \textbf{underdetermined} (infinitely many solutions).
+\end{itemize}
+
+The \textbf{Moore--Penrose pseudoinverse} $A^+$ generalises the matrix inverse to handle all these cases gracefully.
+
+% ─────────────────────────────────────────────
+\section{Definition: The Moore--Penrose Conditions}
+
+\begin{definition}
+For $A \in \mathbb{R}^{m \times n}$, the \textbf{Moore--Penrose pseudoinverse} $A^+ \in \mathbb{R}^{n \times m}$ is the unique matrix satisfying all four Penrose conditions:
+\begin{align}
+    A A^+ A &= A \label{eq:p1}\\
+    A^+ A A^+ &= A^+ \label{eq:p2}\\
+    (A A^+)^\top &= A A^+ \label{eq:p3}\\
+    (A^+ A)^\top &= A^+ A \label{eq:p4}
+\end{align}
+\end{definition}
+
+Conditions \eqref{eq:p1} and \eqref{eq:p2} say $A^+$ acts as a ``weak'' two-sided inverse. Conditions \eqref{eq:p3} and \eqref{eq:p4} enforce symmetry (Hermitian) of the products $AA^+$ and $A^+A$, which ensures $A^+$ is an \emph{orthogonal} projector.
+
+\begin{keybox}
+\textbf{Key fact:} When $A$ is square and invertible, $A^+ = A^{-1}$ recovers the ordinary inverse.
+\end{keybox}
+
+% ─────────────────────────────────────────────
+\section{Connection to Singular Value Decomposition (SVD)}
+
+\subsection{The SVD Factorisation}
+
+Any matrix $A \in \mathbb{R}^{m \times n}$ of rank $r$ can be decomposed as:
+\[
+    A = U \Sigma V^\top
+\]
+where:
+\begin{itemize}
+    \item $U \in \mathbb{R}^{m \times m}$ — orthogonal matrix of \textbf{left singular vectors} (columns form an orthonormal basis for $\mathbb{R}^m$)
+    \item $\Sigma \in \mathbb{R}^{m \times n}$ — diagonal matrix of \textbf{singular values} $\sigma_1 \geq \sigma_2 \geq \cdots \geq \sigma_r > 0$, with zeros elsewhere
+    \item $V \in \mathbb{R}^{n \times n}$ — orthogonal matrix of \textbf{right singular vectors} (columns form an orthonormal basis for $\mathbb{R}^n$)
+\end{itemize}
+
+Since $U$ and $V$ are orthogonal, $U^{-1} = U^\top$ and $V^{-1} = V^\top$, making them cheap to invert.
+
+\subsection{Full vs.\ Thin SVD}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lccc}
+    \toprule
+    & $U$ & $\Sigma$ & $V$ \\
+    \midrule
+    \textbf{Full SVD} & $m \times m$ & $m \times n$ & $n \times n$ \\
+    \textbf{Thin SVD} & $m \times r$ & $r \times r$ & $n \times r$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+For computing $A^+$, the \textbf{thin SVD} is sufficient — the extra columns in the full SVD correspond to zero singular values and contribute nothing.
+
+\subsection{The Pseudoinverse via SVD}
+
+\begin{theorem}
+Given $A = U\Sigma V^\top$, the Moore--Penrose pseudoinverse is:
+\[
+    \boxed{A^+ = V \Sigma^+ U^\top}
+\]
+where $\Sigma^+$ is formed by taking the reciprocal of each \textbf{non-zero} singular value and leaving zeros as zero:
+\[
+    \Sigma^+ = \operatorname{diag}\!\left(\frac{1}{\sigma_1},\, \frac{1}{\sigma_2},\, \ldots,\, \frac{1}{\sigma_r},\, 0,\, \ldots,\, 0\right)^\top
+\]
+\end{theorem}
+
+\textbf{Intuition.} SVD says: rotate ($V^\top$) $\to$ scale ($\Sigma$) $\to$ rotate ($U$). The pseudoinverse simply reverses this: rotate back ($U^\top$) $\to$ invert the scaling ($\Sigma^+$) $\to$ rotate back ($V$). The orthonormality of $U$ and $V$ makes this clean reversal possible.
+
+\textbf{Why zeros stay zero.} Rank-deficient directions (zero singular values) carry no information about $A$ — they correspond to the null space. Trying to invert them would be division by zero, and setting them to zero is exactly what discards these redundant directions, mirroring the intuition of ``removing linearly dependent columns.''
+
+% ─────────────────────────────────────────────
+\section{Three Regimes: Square, Tall, and Wide Matrices}
+
+\subsection{Square, Full-Rank Matrix}
+
+$A \in \mathbb{R}^{n \times n}$, rank $n$. A unique exact solution exists:
+\[
+    \mathbf{x} = A^{-1}\mathbf{b} = A^+\mathbf{b}
+\]
+
+\subsection{Tall Matrix: Overdetermined System}
+
+$A \in \mathbb{R}^{m \times n}$ with $m > n$, full column rank. More equations than unknowns — no exact solution in general. The pseudoinverse gives the \textbf{least-squares solution}:
+\[
+    \mathbf{x}^+ = A^+\mathbf{b} = (A^\top A)^{-1} A^\top \mathbf{b}
+    \qquad \text{minimises } \|A\mathbf{x} - \mathbf{b}\|^2
+\]
+
+\subsection{Wide Matrix: Underdetermined System}
+
+$A \in \mathbb{R}^{m \times n}$ with $m < n$, full row rank. More unknowns than equations — infinitely many exact solutions exist. The pseudoinverse gives the \textbf{minimum-norm solution}:
+\[
+    \mathbf{x}^+ = A^+\mathbf{b} = A^\top(AA^\top)^{-1}\mathbf{b}
+    \qquad \text{minimises } \|\mathbf{x}\|
+\]
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lcccc}
+    \toprule
+    \textbf{Case} & \textbf{Shape} & \textbf{Solutions} & \textbf{$A^+$ formula} & \textbf{Minimises} \\
+    \midrule
+    Square (full rank) & $n \times n$ & Exactly one & $A^{-1}$ & --- \\
+    Tall (full col rank) & $m \times n$, $m > n$ & None (exact) & $(A^\top A)^{-1}A^\top$ & $\|A\mathbf{x}-\mathbf{b}\|$ \\
+    Wide (full row rank) & $m \times n$, $m < n$ & Infinitely many & $A^\top(AA^\top)^{-1}$ & $\|\mathbf{x}\|$ \\
+    Rank-deficient & Any & None or $\infty$ & $V\Sigma^+U^\top$ & Both \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+% ─────────────────────────────────────────────
+\section{Derivations of the Pseudoinverse (Tall Case)}
+
+We focus on the tall, full-column-rank case where $A^+ = (A^\top A)^{-1}A^\top$.
+
+\subsection{Derivation 1: Least Squares (Calculus)}
+
+\textbf{Goal:} Minimise $f(\mathbf{x}) = \|A\mathbf{x} - \mathbf{b}\|^2$.
+
+Expanding:
+\[
+    f(\mathbf{x}) = \mathbf{x}^\top A^\top A \mathbf{x} - 2\mathbf{x}^\top A^\top \mathbf{b} + \mathbf{b}^\top \mathbf{b}
+\]
+Differentiating and setting to zero:
+\[
+    \nabla_{\mathbf{x}} f = 2A^\top(A\mathbf{x} - \mathbf{b}) = \mathbf{0}
+\]
+This yields the \textbf{normal equations}:
+\[
+    A^\top A \mathbf{x} = A^\top \mathbf{b}
+\]
+Since $A$ has full column rank, $A^\top A$ is $n \times n$ and invertible. Solving:
+\[
+    \mathbf{x}^+ = (A^\top A)^{-1} A^\top \mathbf{b} \implies A^+ = (A^\top A)^{-1} A^\top
+\]
+
+\subsection{Derivation 2: Geometric Projection}
+
+\textbf{Column space perspective.} When $A\mathbf{x} = \mathbf{b}$ has no exact solution, $\mathbf{b}$ lies outside the column space $\text{col}(A)$. The best we can do is find $\mathbf{x}$ such that $A\mathbf{x}$ is the \textbf{closest point} in $\text{col}(A)$ to $\mathbf{b}$.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.2]
+    \draw[thick, blue!40, fill=blue!8] (-2,-0.8) -- (2,-0.8) -- (3,0.8) -- (-1,0.8) -- cycle;
+    \node[blue!60] at (2.2,0) {$\text{col}(A)$};
+    \coordinate (bhat) at (0.5, 0.1);
+    \coordinate (b) at (0.5, 2.0);
+    \draw[thick, ->, red!70!black] (bhat) -- (b) node[right] {$\mathbf{b}$};
+    \draw[thick, dashed, gray] (bhat) -- (b);
+    \fill[blue!70] (bhat) circle (2pt) node[below right] {$\hat{\mathbf{b}} = A\mathbf{x}^+ = P\mathbf{b}$};
+    \draw[thick, <->, orange] (0.5,0.1) -- (0.5, 1.95);
+    \node[orange, right] at (0.9, 1.0) {residual $\perp \text{col}(A)$};
+\end{tikzpicture}
+\end{center}
+
+The closest point $\hat{\mathbf{b}} \in \text{col}(A)$ to $\mathbf{b}$ is its \textbf{orthogonal projection} $\hat{\mathbf{b}} = P\mathbf{b}$, where $P$ is the orthogonal projector onto $\text{col}(A)$. The residual $\mathbf{b} - \hat{\mathbf{b}}$ is perpendicular to every column of $A$:
+\[
+    A^\top(\mathbf{b} - A\mathbf{x}^+) = \mathbf{0} \quad \Longleftrightarrow \quad A^\top A \mathbf{x}^+ = A^\top \mathbf{b}
+\]
+which is exactly the normal equations again — the geometric and calculus views are equivalent.
+
+\textbf{The projection matrix.} The projector onto $\text{col}(A)$ is:
+\[
+    P = A(A^\top A)^{-1} A^\top
+\]
+and satisfies $P^2 = P$ (idempotent) and $P^\top = P$ (symmetric). Since $P = AA^+$, we read off:
+\[
+    A^+ = (A^\top A)^{-1} A^\top
+\]
+
+\begin{keybox}
+\textbf{Key identity:} $AA^+$ is the orthogonal projector onto the \textbf{column space} of $A$. \\
+\textbf{Key identity:} $A^+A$ is the orthogonal projector onto the \textbf{row space} of $A$.
+\end{keybox}
+
+\subsection{Derivation 3: Tikhonov Regularisation (Limit)}
+
+Add a regularisation term and solve:
+\[
+    \min_{\mathbf{x}}\; \|A\mathbf{x} - \mathbf{b}\|^2 + \lambda\|\mathbf{x}\|^2, \quad \lambda > 0
+\]
+The unique closed-form solution is:
+\[
+    \mathbf{x}_\lambda = (A^\top A + \lambda I)^{-1} A^\top \mathbf{b}
+\]
+$(A^\top A + \lambda I)$ is always invertible for $\lambda > 0$, even when $A^\top A$ is singular. The pseudoinverse emerges as the limit:
+\[
+    A^+ = \lim_{\lambda \to 0^+} (A^\top A + \lambda I)^{-1} A^\top
+\]
+This connects $A^+$ directly to \textbf{ridge regression} in machine learning ($\lambda > 0$ controls regularisation), and shows the pseudoinverse is numerically approximable in a stable way.
+
+% ─────────────────────────────────────────────
+\section{Handling Rank Deficiency: Manual Removal vs.\ SVD}
+
+\subsection{A Natural but Flawed Intuition}
+
+Suppose $A \in \mathbb{R}^{m \times n}$ is tall but rank-deficient, with rank $r < n$. Some columns are
+linearly dependent — they carry no new information. A natural idea is:
+
+\begin{enumerate}
+    \item Identify and \textbf{remove} the redundant (linearly dependent) columns.
+    \item This yields a smaller matrix $\tilde{A} \in \mathbb{R}^{m \times r}$ of full column rank.
+    \item Apply the left pseudoinverse: $\tilde{A}^+ = (\tilde{A}^\top \tilde{A})^{-1}\tilde{A}^\top$.
+    \item Solve and map the solution back to the original coordinates.
+\end{enumerate}
+
+This approach is \emph{valid in spirit} — the rank-$r$ subspace is genuinely what matters. However,
+it runs into serious practical difficulties.
+
+\subsection{Why Manual Removal Fails in Practice}
+
+\textbf{Problem 1: Which columns do you drop?}
+
+In clean textbook examples, a column may be exactly twice another. In real data, no two columns are
+ever \emph{exactly} dependent — they are only \emph{nearly} dependent due to measurement noise,
+floating-point errors, or correlation. This makes the keep/drop decision inherently ambiguous:
+
+\[
+    \mathbf{a}_3 = 2\mathbf{a}_1 + \varepsilon, \quad \|\varepsilon\| \ll 1
+\]
+
+Is $\mathbf{a}_3$ redundant? The answer depends on $\varepsilon$ in a way that has no clean threshold.
+A hard binary decision (keep or drop) is numerically fragile.
+
+\textbf{Problem 2: You lose track of the original variables.}
+
+After dropping columns, $\tilde{A}$ operates on a reduced set of unknowns
+$\tilde{\mathbf{x}} \in \mathbb{R}^r$, not the original $\mathbf{x} \in \mathbb{R}^n$.
+The solution $\tilde{\mathbf{x}}^+$ does not directly answer what the dropped unknowns should be.
+Typically one assigns them the value zero by convention, but this is an arbitrary choice with no
+optimality guarantee.
+
+\textbf{Problem 3: Mapping back is ambiguous.}
+
+Even after solving in the reduced space, reconstructing a full $\mathbf{x} \in \mathbb{R}^n$
+requires an explicit bookkeeping of which columns were dropped and a decision about how to fill in
+the missing entries. This is error-prone and not unique.
+
+\subsection{What SVD Does Instead}
+
+SVD performs the \emph{same conceptual step} — discarding redundant directions — but does so
+\textbf{automatically, optimally, and in a coordinate system perfectly adapted to $A$}.
+
+\medskip
+
+\textbf{Step 1: Rotate into a new basis (via $V^\top$).}
+
+Instead of working in the original column coordinates, SVD rotates into the basis of
+\emph{right singular vectors}. In this rotated space, the directions are ordered by how much
+variance / information they carry (the singular values $\sigma_1 \geq \cdots \geq \sigma_r > 0$).
+
+\textbf{Step 2: Identify redundant directions (via $\Sigma$).}
+
+The zero singular values \emph{exactly} identify the null-space directions — no ambiguous
+thresholding required in the exact case:
+\[
+    \Sigma = \operatorname{diag}(\underbrace{\sigma_1, \ldots, \sigma_r}_{\text{keep}},\;
+                                  \underbrace{0, \ldots, 0}_{\text{discard}})
+\]
+
+\textbf{Step 3: Invert only the kept directions (via $\Sigma^+$).}
+
+\[
+    \Sigma^+ = \operatorname{diag}\!\left(\frac{1}{\sigma_1}, \ldots, \frac{1}{\sigma_r},\;
+                                           0, \ldots, 0\right)^\top
+\]
+
+Setting the reciprocals of zero singular values to zero (rather than $\infty$) is the mathematically
+principled choice: it produces the minimum-norm solution among all least-squares minimisers.
+
+\textbf{Step 4: Rotate back automatically (via $V$).}
+
+Because $V$ is orthogonal, the rotation is trivially reversed. The solution is returned in the
+\emph{original} coordinate space with no bookkeeping:
+\[
+    \mathbf{x}^+ = V\Sigma^+ U^\top \mathbf{b}
+\]
+
+\subsection{Side-by-Side Comparison}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lll}
+    \toprule
+    \textbf{Step} & \textbf{Manual removal} & \textbf{SVD pseudoinverse} \\
+    \midrule
+    Find redundancy     & Inspect columns (fragile)          & Non-zero $\sigma_i$ (automatic) \\
+    Handle near-dependency & Hard threshold (arbitrary)      & Soft via $\sigma_i \approx 0$ \\
+    Discard redundancy  & Delete columns (loses variables)   & Set $1/\sigma_i = 0$ in $\Sigma^+$ \\
+    Solve reduced system & In smaller $\tilde{\mathbf{x}}$ space & In rotated space via $U^\top$ \\
+    Map back            & Assign zeros (arbitrary)           & $V$ rotates back automatically \\
+    Optimality of result & Not guaranteed                    & Minimum norm, guaranteed \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{keybox}
+\textbf{Takeaway.} The intuition of ``remove linearly dependent columns'' is correct, but executing it
+manually requires arbitrary choices at every step. SVD realises the same idea automatically, in an
+optimally adapted coordinate system, with a guaranteed minimum-norm result and no bookkeeping.
+Manual removal is SVD done poorly; SVD is manual removal done perfectly.
+\end{keybox}
+
+\subsection{The Near-Rank-Deficient Case: Truncated SVD}
+
+SVD also handles the practically important case where $A$ is \emph{not} exactly rank-deficient but
+has very small singular values. A \textbf{truncated SVD} sets all $\sigma_i < \epsilon$ to zero
+before inverting:
+\[
+    \sigma_i^+ = \begin{cases} 1/\sigma_i & \text{if } \sigma_i \geq \epsilon \\ 0 & \text{if } \sigma_i < \epsilon \end{cases}
+\]
+This is precisely the principled version of the ``remove near-dependent columns'' idea — and it is
+numerically stable where manual removal is not.
+
+% ─────────────────────────────────────────────
+\section{SVD and Rank-Deficient Matrices}
+
+When $A$ is \textbf{not} full rank, neither $(A^\top A)^{-1}A^\top$ nor $A^\top(AA^\top)^{-1}$ is well-defined. SVD handles this seamlessly.
+
+\textbf{What SVD does geometrically.}
+\begin{enumerate}
+    \item \textbf{Rotate} the input space via $V^\top$, aligning coordinates with singular directions.
+    \item \textbf{Scale} along each direction by $\sigma_i$. Directions with $\sigma_i = 0$ are the null space.
+    \item \textbf{Rotate} the output space via $U$.
+\end{enumerate}
+
+$\Sigma^+$ inverts only the non-zero singular values, discarding null-space directions entirely. This is equivalent to the intuition of ``removing linearly dependent columns,'' but done automatically and optimally in a rotated coordinate system.
+
+\textbf{Numerical stability.} In practice, singular values may be very small rather than exactly zero (due to noise). A \textbf{truncated SVD} sets all singular values below a threshold $\epsilon$ to zero before inverting, yielding a robust numerical pseudoinverse.
+
+% ─────────────────────────────────────────────
+\section{Summary}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{ll}
+    \toprule
+    \textbf{Derivation approach} & \textbf{Core perspective} \\
+    \midrule
+    Least squares (calculus)   & $A^+$ is an optimiser: minimise $\|A\mathbf{x}-\mathbf{b}\|^2$ \\
+    SVD                        & $A^+$ is a structured inverse: $V\Sigma^+U^\top$ \\
+    Moore--Penrose axioms       & $A^+$ is the unique solution to four algebraic conditions \\
+    Projection geometry        & $A^+$ maps $\mathbf{b}$ to the nearest point in $\text{col}(A)$ \\
+    Tikhonov regularisation    & $A^+$ is the limit of ridge regression as $\lambda \to 0$ \\
+    \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{keybox}
+\textbf{Unifying intuition.} The Moore--Penrose pseudoinverse always finds the ``most sensible'' solution to $A\mathbf{x} = \mathbf{b}$: when no solution exists it finds the \emph{best approximate} one; when infinitely many exist it finds the \emph{simplest} one; and via SVD it does all of this stably even when $A$ is rank-deficient.
+\end{keybox}
+
+\end{document}
