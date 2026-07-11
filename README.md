@@ -38,6 +38,19 @@ An alternative educational derivation with enhanced visual presentation and peda
 
 **Note**: Both derivations arrive at the same mathematical result (δ = π - arctan(2) ≈ 116.565°) but demonstrate how different AI systems approach mathematical exposition, offering valuable insights into AI-assisted mathematical writing and pedagogy.
 
+### The Moore–Penrose Pseudoinverse
+**Files**: `pseudoinverse.tex`, `pseudoinverse.pdf`
+
+An article on the Moore–Penrose pseudoinverse: its foundations, derivations, and connection to the singular value decomposition (SVD). Covers:
+
+- The four Penrose conditions defining $A^+$ uniquely
+- The relationship between $A^+$ and the SVD factorisation $A = U\Sigma V^\top$
+- The three regimes of interest: square, tall, and wide matrices
+- Explicit derivations of the pseudoinverse in the tall (overdetermined) case
+- Handling rank-deficient matrices, comparing manual removal of dependent rows/columns with the SVD-based approach
+
+**Key concepts**: Linear algebra, matrix inverses, least-squares solutions, singular value decomposition, rank deficiency
+
 ## Future Directions
 
 - Extension to other Platonic solids
