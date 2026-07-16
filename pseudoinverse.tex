@@ -87,7 +87,16 @@ For $A \in \mathbb{R}^{m \times n}$, the \textbf{Moore--Penrose pseudoinverse} $
 \end{align}
 \end{definition}
 
-Conditions \eqref{eq:p1} and \eqref{eq:p2} say $A^+$ acts as a ``weak'' two-sided inverse. Conditions \eqref{eq:p3} and \eqref{eq:p4} enforce symmetry (Hermitian) of the products $AA^+$ and $A^+A$, which ensures $A^+$ is an \emph{orthogonal} projector.
+Conditions \eqref{eq:p1} and \eqref{eq:p2} say $A^+$ acts as a ``weak'' two-sided inverse. Conditions \eqref{eq:p3} and \eqref{eq:p4} require the products $AA^+$ and $A^+A$ to be symmetric. Note that \eqref{eq:p1} already makes both products idempotent — e.g.\ $(AA^+)(AA^+) = (AA^+A)A^+ = AA^+$ — so they are always projectors; \eqref{eq:p3} and \eqref{eq:p4} upgrade them from oblique projectors to \emph{orthogonal} ones.
+
+The definition quietly asserts uniqueness, which deserves proof — the argument, a pleasant exercise in using all four conditions, is given in Appendix~\ref{app:proofs}.
+
+\begin{theorem}[Uniqueness]
+\label{thm:uniqueness}
+At most one matrix satisfies conditions \eqref{eq:p1}--\eqref{eq:p4}.
+\end{theorem}
+
+Existence is settled constructively in the next section: the SVD formula satisfies all four conditions.
 
 \begin{keybox}
 \textbf{Key fact:} When $A$ is square and invertible, $A^+ = A^{-1}$ recovers the ordinary inverse.
@@ -111,6 +120,89 @@ where:
 
 Since $U$ and $V$ are orthogonal, $U^{-1} = U^\top$ and $V^{-1} = V^\top$, making them cheap to invert.
 
+\subsection{Geometric Picture: The Unit Sphere Becomes an Ellipse}
+
+The factorisation $A = U\Sigma V^\top$ has a clean geometric reading: \textbf{every matrix maps the unit sphere to an ellipsoid.} Following the sphere through each factor, right to left:
+
+\begin{enumerate}
+    \item $V^\top$ is orthogonal, so it \textbf{rotates} the unit sphere rigidly onto itself — it just re-labels the sphere's surface so that the right singular vectors $\mathbf{v}_i$ land on the standard axes.
+    \item $\Sigma$ then \textbf{scales} along each axis by $\sigma_i$, deforming the sphere into an axis-aligned ellipsoid with semi-axis lengths $\sigma_1, \ldots, \sigma_n$.
+    \item $U$ is orthogonal too, so it \textbf{rotates} this ellipsoid rigidly into its final orientation, without changing its shape.
+\end{enumerate}
+
+The net effect: $A$ sends the unit sphere $\{\mathbf{x} : \|\mathbf{x}\| = 1\}$ to an ellipsoid whose semi-axes have lengths exactly the singular values $\sigma_i$, pointing along the left singular vectors $\mathbf{u}_i$. Concretely, each right singular vector maps directly to a semi-axis of the ellipsoid:
+\[
+    A\mathbf{v}_i = \sigma_i \mathbf{u}_i
+\]
+
+\begin{center}
+\begin{tikzpicture}[scale=1.15]
+    % Unit circle
+    \draw[thick, gray] (0,0) circle (1);
+    \draw[thick, ->, blue!70!black] (0,0) -- (1,0) node[right] {$\mathbf{v}_1$};
+    \draw[thick, ->, blue!70!black] (0,0) -- (0,1) node[above] {$\mathbf{v}_2$};
+    \node at (0,-1.4) {unit circle};
+
+    % Arrow with label
+    \draw[thick, ->, >=stealth] (1.7,0) -- (3.1,0) node[midway, above] {$A$};
+
+    % Ellipse (rotated)
+    \begin{scope}[shift={(5.2,0)}, rotate=25]
+        \draw[thick, boxborder, fill=boxbg] (0,0) ellipse (1.6 and 0.7);
+        \draw[thick, ->, red!70!black] (0,0) -- (1.6,0) node[right] {$\sigma_1\mathbf{u}_1$};
+        \draw[thick, ->, red!70!black] (0,0) -- (0,0.7) node[above] {$\sigma_2\mathbf{u}_2$};
+    \end{scope}
+    \node at (5.2,-1.4) {ellipse (image of unit circle)};
+\end{tikzpicture}
+\end{center}
+
+This picture makes the pseudoinverse's job visually obvious: $A^+ = V\Sigma^+U^\top$ undoes exactly this deformation. It rotates the ellipsoid back so its axes align with $\mathbf{u}_i$, \textbf{shrinks} each axis by $1/\sigma_i$ (turning it back into a sphere), and rotates once more to land on the $\mathbf{v}_i$ directions. The largest singular value $\sigma_1$ is the sphere's most-stretched direction — and correspondingly the \emph{most-shrunk} direction under $A^+$, since $A^+$ divides by it.
+
+\begin{keybox}
+\textbf{Key fact:} A rank-deficient direction ($\sigma_i = 0$) is one the ellipsoid collapses completely flat along — that direction contributes zero thickness to the image, which is exactly why $\Sigma^+$ cannot invert it and instead sets $1/\sigma_i \to 0$.
+\end{keybox}
+
+\subsection{The Dual Picture: Which Shapes Map to a Circle?}
+
+It is natural to ask the reverse question: what must a set look like in the \emph{input} space so that $A$ maps it exactly onto the unit sphere of the output space? If $A$ stretches each singular direction by $\sigma_i$, then a set destined to land on the sphere must be pre-shrunk by $1/\sigma_i$ along those same directions. Indeed, writing $\mathbf{x} = \sum_i c_i \mathbf{v}_i$ and using $A\mathbf{v}_i = \sigma_i\mathbf{u}_i$:
+\[
+    \|A\mathbf{x}\|^2 = \sum_i (\sigma_i c_i)^2 = 1
+    \quad\Longleftrightarrow\quad
+    \mathbf{x} \in \text{ellipsoid with semi-axes } \tfrac{1}{\sigma_i}\mathbf{v}_i
+\]
+(taking $A$ invertible for the moment). Note the inversion: the direction $A$ stretches \emph{most}, $\mathbf{v}_1$, is this ellipsoid's \emph{shortest} axis — a point there only needs to start $1/\sigma_1$ from the origin to land at distance one.
+
+\begin{center}
+\begin{tikzpicture}[scale=1.15]
+    % Input ellipse (long axis along v2 since 1/sigma_2 > 1/sigma_1)
+    \begin{scope}[rotate=-20]
+        \draw[thick, boxborder, fill=boxbg] (0,0) ellipse (1.5 and 0.65);
+        \draw[thick, ->, blue!70!black] (0,0) -- (1.5,0) node[right] {$\tfrac{1}{\sigma_2}\mathbf{v}_2$};
+        \draw[thick, ->, blue!70!black] (0,0) -- (0,0.65) node[above] {$\tfrac{1}{\sigma_1}\mathbf{v}_1$};
+    \end{scope}
+    \node at (0,-1.4) {ellipse $\{\mathbf{x} : \|A\mathbf{x}\| = 1\}$};
+
+    % Arrow with label
+    \draw[thick, ->, >=stealth] (2.4,0) -- (3.8,0) node[midway, above] {$A$};
+
+    % Unit circle output
+    \begin{scope}[shift={(5.6,0)}]
+        \draw[thick, gray] (0,0) circle (1);
+        \draw[thick, ->, red!70!black] (0,0) -- (1,0) node[right] {$\mathbf{u}_1$};
+        \draw[thick, ->, red!70!black] (0,0) -- (0,1) node[above] {$\mathbf{u}_2$};
+    \end{scope}
+    \node at (5.6,-1.4) {unit circle};
+\end{tikzpicture}
+\end{center}
+
+The punchline: this input ellipsoid is exactly the \textbf{image of the unit sphere under $A^+$}. This is immediate from the SVD — $A^+ = V\Sigma^+U^\top$ is itself an SVD-style factorisation with singular values $1/\sigma_i$ and the roles of $\mathbf{u}_i, \mathbf{v}_i$ swapped, so $A^+$ sends the unit sphere to the ellipsoid with semi-axes $\tfrac{1}{\sigma_i}\mathbf{v}_i$.
+
+\begin{keybox}
+\textbf{Duality.} $A$ maps the unit sphere to the ellipsoid with semi-axes $\sigma_i\mathbf{u}_i$; $A^+$ maps the unit sphere to the ellipsoid with semi-axes $\tfrac{1}{\sigma_i}\mathbf{v}_i$. Each map's output ellipsoid is precisely the set the \emph{other} map carries onto the unit sphere. For invertible $A$ this is just the statement $A^+ = A^{-1}$ in geometric form.
+\end{keybox}
+
+When $A$ is rank-deficient the picture degenerates consistently in both spaces. In the input space, motion along $\text{null}(A)$ is invisible to $A$, so $\{\mathbf{x} : \|A\mathbf{x}\| = 1\}$ becomes an elliptical \emph{cylinder} (the ellipse extruded freely along the null space) — and it reaches only the part of the unit sphere lying in $\text{col}(A)$. Correspondingly, $A^+$'s unit-sphere image gains no axis in those directions: $\Sigma^+$ puts a $0$ where $1/\sigma_i$ would blow up, flattening the ellipsoid instead of extruding it. The pseudoinverse resolves both ambiguities the same way — by ignoring the directions that carry no information.
+
 \subsection{Full vs.\ Thin SVD}
 
 \begin{center}
@@ -130,15 +222,18 @@ For computing $A^+$, the \textbf{thin SVD} is sufficient — the extra columns i
 \subsection{The Pseudoinverse via SVD}
 
 \begin{theorem}
+\label{thm:svd}
 Given $A = U\Sigma V^\top$, the Moore--Penrose pseudoinverse is:
 \[
     \boxed{A^+ = V \Sigma^+ U^\top}
 \]
-where $\Sigma^+$ is formed by taking the reciprocal of each \textbf{non-zero} singular value and leaving zeros as zero:
+where $\Sigma^+ \in \mathbb{R}^{n \times m}$ is the \emph{transpose} of $\Sigma$ with each non-zero singular value replaced by its reciprocal (zeros stay zero):
 \[
-    \Sigma^+ = \operatorname{diag}\!\left(\frac{1}{\sigma_1},\, \frac{1}{\sigma_2},\, \ldots,\, \frac{1}{\sigma_r},\, 0,\, \ldots,\, 0\right)^\top
+    \Sigma^+ = \operatorname{diag}\!\left(\frac{1}{\sigma_1},\, \frac{1}{\sigma_2},\, \ldots,\, \frac{1}{\sigma_r},\, 0,\, \ldots,\, 0\right) \in \mathbb{R}^{n \times m}
 \]
 \end{theorem}
+
+The proof — a direct verification of the four Penrose conditions, in which the orthogonality of $U$ and $V$ does all the work — is given in Appendix~\ref{app:proofs}. Combined with Theorem~\ref{thm:uniqueness}, it also settles existence: since every matrix has an SVD, every matrix has a pseudoinverse.
 
 \textbf{Intuition.} SVD says: rotate ($V^\top$) $\to$ scale ($\Sigma$) $\to$ rotate ($U$). The pseudoinverse simply reverses this: rotate back ($U^\top$) $\to$ invert the scaling ($\Sigma^+$) $\to$ rotate back ($V$). The orthonormality of $U$ and $V$ makes this clean reversal possible.
 
@@ -183,6 +278,17 @@ $A \in \mathbb{R}^{m \times n}$ with $m < n$, full row rank. More unknowns than 
     \bottomrule
 \end{tabular}
 \end{center}
+
+All four rows are instances of a single statement:
+
+\begin{theorem}[Minimum-norm least-squares solution]
+For any $A \in \mathbb{R}^{m \times n}$ and $\mathbf{b} \in \mathbb{R}^m$, the vector $\mathbf{x}^+ = A^+\mathbf{b}$ is the unique solution of
+\[
+    \min_{\mathbf{x}}\; \|\mathbf{x}\| \quad \text{subject to} \quad \|A\mathbf{x} - \mathbf{b}\| = \min_{\mathbf{z}}\, \|A\mathbf{z} - \mathbf{b}\|.
+\]
+\end{theorem}
+
+In words: among all least-squares minimisers — there may be exactly one, or an affine family of them — $A^+\mathbf{b}$ is the shortest. When exact solutions exist, the least-squares constraint is vacuous and only minimality of $\|\mathbf{x}\|$ bites (the wide case); when the minimiser is unique, minimality of $\|\mathbf{x}\|$ is vacuous instead (the square and tall cases); in the rank-deficient case both are active at once.
 
 % ─────────────────────────────────────────────
 \section{Derivations of the Pseudoinverse (Tall Case)}
@@ -248,6 +354,8 @@ and satisfies $P^2 = P$ (idempotent) and $P^\top = P$ (symmetric). Since $P = AA
 \textbf{Key identity:} $A^+A$ is the orthogonal projector onto the \textbf{row space} of $A$.
 \end{keybox}
 
+Read together, the two identities say that $A^+$ inverts $A$ \emph{exactly where inversion is possible}: $A$ maps $\text{row}(A)$ bijectively onto $\text{col}(A)$, $A^+$ is the inverse of that bijection, and $A^+$ sends the leftover directions $\text{null}(A^\top) = \text{col}(A)^\perp$ to zero.
+
 \subsection{Derivation 3: Tikhonov Regularisation (Limit)}
 
 Add a regularisation term and solve:
@@ -262,10 +370,22 @@ $(A^\top A + \lambda I)$ is always invertible for $\lambda > 0$, even when $A^\t
 \[
     A^+ = \lim_{\lambda \to 0^+} (A^\top A + \lambda I)^{-1} A^\top
 \]
+
+The SVD makes this limit transparent. Substituting $A = U\Sigma V^\top$ diagonalises the problem:
+\[
+    \mathbf{x}_\lambda = \sum_{i=1}^{r} \underbrace{\frac{\sigma_i}{\sigma_i^2 + \lambda}}_{\text{filter factor}} (\mathbf{u}_i^\top \mathbf{b})\, \mathbf{v}_i,
+    \qquad
+    \frac{\sigma_i}{\sigma_i^2 + \lambda} \;\longrightarrow\; \frac{1}{\sigma_i} \quad \text{as } \lambda \to 0^+.
+\]
+Directions with $\sigma_i = 0$ never enter the sum, so the limit is exactly $V\Sigma^+U^\top\mathbf{b}$ — meaning the limit argument works even when $A$ is rank-deficient and the closed form $(A^\top A)^{-1}A^\top$ does not exist. Note also that the filter factor damps the small-$\sigma_i$ directions most strongly: ridge regression is a \emph{smooth} version of the truncated SVD of Section~\ref{sec:rankdef}.
+
 This connects $A^+$ directly to \textbf{ridge regression} in machine learning ($\lambda > 0$ controls regularisation), and shows the pseudoinverse is numerically approximable in a stable way.
 
 % ─────────────────────────────────────────────
 \section{Handling Rank Deficiency: Manual Removal vs.\ SVD}
+\label{sec:rankdef}
+
+When $A$ is not full rank, neither closed form survives: $A^\top A$ and $AA^\top$ are singular, so $(A^\top A)^{-1}A^\top$ and $A^\top(AA^\top)^{-1}$ are undefined. The SVD formula $V\Sigma^+U^\top$ is the only expression that still works — this section examines why it is also the \emph{right} thing to do.
 
 \subsection{A Natural but Flawed Intuition}
 
@@ -354,6 +474,7 @@ Because $V$ is orthogonal, the rotation is trivially reversed. The solution is r
 \subsection{Side-by-Side Comparison}
 
 \begin{center}
+\small
 \renewcommand{\arraystretch}{1.5}
 \begin{tabular}{lll}
     \toprule
@@ -388,22 +509,6 @@ This is precisely the principled version of the ``remove near-dependent columns'
 numerically stable where manual removal is not.
 
 % ─────────────────────────────────────────────
-\section{SVD and Rank-Deficient Matrices}
-
-When $A$ is \textbf{not} full rank, neither $(A^\top A)^{-1}A^\top$ nor $A^\top(AA^\top)^{-1}$ is well-defined. SVD handles this seamlessly.
-
-\textbf{What SVD does geometrically.}
-\begin{enumerate}
-    \item \textbf{Rotate} the input space via $V^\top$, aligning coordinates with singular directions.
-    \item \textbf{Scale} along each direction by $\sigma_i$. Directions with $\sigma_i = 0$ are the null space.
-    \item \textbf{Rotate} the output space via $U$.
-\end{enumerate}
-
-$\Sigma^+$ inverts only the non-zero singular values, discarding null-space directions entirely. This is equivalent to the intuition of ``removing linearly dependent columns,'' but done automatically and optimally in a rotated coordinate system.
-
-\textbf{Numerical stability.} In practice, singular values may be very small rather than exactly zero (due to noise). A \textbf{truncated SVD} sets all singular values below a threshold $\epsilon$ to zero before inverting, yielding a robust numerical pseudoinverse.
-
-% ─────────────────────────────────────────────
 \section{Summary}
 
 \begin{center}
@@ -415,7 +520,7 @@ $\Sigma^+$ inverts only the non-zero singular values, discarding null-space dire
     Least squares (calculus)   & $A^+$ is an optimiser: minimise $\|A\mathbf{x}-\mathbf{b}\|^2$ \\
     SVD                        & $A^+$ is a structured inverse: $V\Sigma^+U^\top$ \\
     Moore--Penrose axioms       & $A^+$ is the unique solution to four algebraic conditions \\
-    Projection geometry        & $A^+$ maps $\mathbf{b}$ to the nearest point in $\text{col}(A)$ \\
+    Projection geometry        & $AA^+$ projects $\mathbf{b}$ onto $\text{col}(A)$; $\mathbf{x}^+$ realises that projection \\
     Tikhonov regularisation    & $A^+$ is the limit of ridge regression as $\lambda \to 0$ \\
     \bottomrule
 \end{tabular}
@@ -424,5 +529,30 @@ $\Sigma^+$ inverts only the non-zero singular values, discarding null-space dire
 \begin{keybox}
 \textbf{Unifying intuition.} The Moore--Penrose pseudoinverse always finds the ``most sensible'' solution to $A\mathbf{x} = \mathbf{b}$: when no solution exists it finds the \emph{best approximate} one; when infinitely many exist it finds the \emph{simplest} one; and via SVD it does all of this stably even when $A$ is rank-deficient.
 \end{keybox}
+
+% ─────────────────────────────────────────────
+\appendix
+\section{Proofs}
+\label{app:proofs}
+
+\begin{proof}[Proof of Theorem~\ref{thm:uniqueness} (Uniqueness)]
+Suppose $B$ and $C$ both satisfy all four conditions. Then
+\begin{align*}
+    AB &= (AB)^\top = B^\top A^\top = B^\top (ACA)^\top \\
+       &= (AB)^\top (AC)^\top = (AB)(AC) = (ABA)C = AC,
+\end{align*}
+using \eqref{eq:p3}, then \eqref{eq:p1} for $C$, then \eqref{eq:p3} again for both products, then \eqref{eq:p1} for $B$. The mirror-image argument with \eqref{eq:p4} gives $BA = CA$. Therefore
+\[
+    B = BAB = (CA)B = C(AB) = C(AC) = CAC = C. \qedhere
+\]
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:svd} (Pseudoinverse via SVD)]
+Orthogonality does all the work: in every product, the inner factors $V^\top V$ and $U^\top U$ collapse to $I$. For condition \eqref{eq:p1},
+\[
+    A A^+ A = U\Sigma V^\top \, V\Sigma^+ U^\top \, U\Sigma V^\top = U(\Sigma\Sigma^+\Sigma)V^\top = U\Sigma V^\top = A,
+\]
+since $\Sigma\Sigma^+\Sigma = \Sigma$ holds entrywise: $\sigma_i \cdot \tfrac{1}{\sigma_i} \cdot \sigma_i = \sigma_i$ for $i \leq r$, and $0 \cdot 0 \cdot 0 = 0$ beyond. Condition \eqref{eq:p2} is the same computation with the roles of $\Sigma$ and $\Sigma^+$ swapped. For \eqref{eq:p3} and \eqref{eq:p4}, note $AA^+ = U(\Sigma\Sigma^+)U^\top$ and $A^+A = V(\Sigma^+\Sigma)V^\top$, where $\Sigma\Sigma^+$ and $\Sigma^+\Sigma$ are diagonal with entries $1$ (for $i \leq r$) and $0$ (beyond) — hence symmetric, and the sandwiches $UDU^\top$, $VDV^\top$ inherit the symmetry. By Theorem~\ref{thm:uniqueness}, this construction \emph{is} the pseudoinverse.
+\end{proof}
 
 \end{document}
