@@ -5,6 +5,30 @@
 \usepackage[margin=1.1in]{geometry}
 \usepackage{amsmath, amssymb, amsthm}
 \usepackage{mathtools}
+\usepackage{graphicx}
+\numberwithin{equation}{section}
+% Equation numbers set as "Eq N.M" and hung in the right margin, styled after
+% the marginal "graffiti" in Knuth/Graham/Patashnik's Concrete Mathematics:
+% that book set its margin notes in a slanted, condensed cut of Concrete
+% Roman (a custom Computer Modern variant) to read as informal asides rather
+% than body text. Concrete Roman itself isn't installed here, so this
+% approximates the effect with the plain Computer Modern family it was
+% derived from: italic in place of a true oblique, and \scalebox for the
+% condensed width, since CM has no condensed cut either.
+% The tag is boxed to a hairline (1sp, effectively zero) width rather than a
+% true zero width: TeX's display-equation algorithm treats an exactly-zero-
+% width tag box as "no tag" and fails to attach it to the display's line,
+% which sends it drifting down to the baseline of the following paragraph. A
+% nonzero width avoids that fallback while still being visually negligible,
+% so the tag stays glued to the equation's own baseline; \hspace then shifts
+% it out past the text edge into the margin whitespace.
+\makeatletter
+\renewcommand{\tagform@}[1]{%
+  \makebox[1sp][l]{\hspace{\dimexpr\marginparsep+0.15in\relax}%
+    \scalebox{0.75}[1]{\fontfamily{cmr}\selectfont\itshape\small
+      Eq~\ignorespaces#1\unskip\@@italiccorr}}%
+}
+\makeatother
 \usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{tikz}
@@ -18,6 +42,7 @@
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\T}{^{\mathsf{T}}}
 \newcommand{\ip}[2]{\langle #1, #2 \rangle}
+\newcommand{\Bip}[2]{\left\langle #1, #2 \right\rangle}
 \newcommand{\vv}[1]{\mathbf{v}_{#1}}
 \newcommand{\uu}[1]{\mathbf{u}_{#1}}
 
@@ -70,9 +95,8 @@ has been checked.
 
 Fix a matrix $A \in \R^{m \times n}$ and think of it as a map $\R^n \to \R^m$.
 Linear maps do not, in general, preserve angles. Take
-\[
-A = \begin{pmatrix} 2 & 1 \\ -0.5 & 1.5 \end{pmatrix},
-\]
+\begin{equation}A = \begin{pmatrix} 2 & 1 \\ -0.5 & 1.5 \end{pmatrix},
+\end{equation}
 which will serve as the running example. The standard basis vectors $e_1, e_2$
 start out perpendicular; their images $Ae_1 = (2, -0.5)$ and $Ae_2 = (1, 1.5)$
 have inner product $1.25$ and sit $70.35^\circ$ apart. The right angle is
@@ -105,9 +129,8 @@ it (\S\S\ref{sec:choose}--\ref{sec:polar}).
 
 Take an orthonormal frame $\vv1(\theta), \vv2(\theta)$ and rotate it rigidly as
 $\theta$ varies. Define
-\[
-f(\theta) \;=\; \ip{A\vv1(\theta)}{A\vv2(\theta)},
-\]
+\begin{equation}f(\theta) \;=\; \ip{A\vv1(\theta)}{A\vv2(\theta)},
+\end{equation}
 the inner product of the two \emph{images}. This is the quantity we want to
 vanish (Figure~\ref{fig:sweep}): $f > 0$ means the images have closed to an acute angle, $f < 0$ means
 they have opened past a right angle, and $f = 0$ means the right angle
@@ -129,13 +152,12 @@ $\vv2$ lands \emph{opposite} $\vv1$, not on it.
 So $\vv1(\theta + 90^\circ) = \vv2(\theta)$ and $\vv2(\theta+90^\circ) = -\vv1(\theta)$.
 Apply $A$, use linearity to pull the sign out, and use the symmetry of the
 inner product:
-\[
-f(\theta+90^\circ)
+\begin{equation}f(\theta+90^\circ)
 \;=\; \ip{A\vv2}{A(-\vv1)}
 \;=\; -\ip{A\vv2}{A\vv1}
 \;=\; -\ip{A\vv1}{A\vv2}
 \;=\; -f(\theta).
-\]
+\end{equation}
 
 This is worth pausing on, because the swap alone would achieve nothing --- the
 inner product is symmetric, so exchanging its two arguments leaves it
@@ -166,11 +188,10 @@ Continuity gives existence but is silent on count. To settle that, compute $f$
 in closed form. Writing $A = \left(\begin{smallmatrix} a & b \\ c & d\end{smallmatrix}\right)$
 and $\vv1 = (\cos\theta, \sin\theta)$, $\vv2 = (-\sin\theta, \cos\theta)$, expanding
 and collecting terms gives
-\[
-\boxed{\;
+\begin{equation}\boxed{\;
 f(\theta) \;=\; (ab + cd)\cos 2\theta \;-\; \tfrac12\left(a^2 - b^2 + c^2 - d^2\right)\sin 2\theta
 \;}
-\]
+\end{equation}
 Two features of this expression matter, and the second is the important one.
 
 \emph{First}, everything is in $2\theta$, not $\theta$. That is the algebraic
@@ -184,16 +205,14 @@ the sign flip is not merely a curiosity but a guarantee: a sinusoid with a
 nonzero mean might never reach zero, but this one must.
 
 Write it in amplitude--phase form as
-\[
-f(\theta) = R\cos(2\theta - \varphi), \qquad
+\begin{equation}f(\theta) = R\cos(2\theta - \varphi), \qquad
 R = \sqrt{A_1^2 + A_2^2}, \quad \varphi = \operatorname{atan2}(A_2, A_1),
-\]
+\end{equation}
 where $A_1 = ab+cd$ and $A_2 = -\tfrac12(a^2-b^2+c^2-d^2)$. Suppose $R \neq 0$.
 As $\theta$ runs over a half turn $[0^\circ, 180^\circ)$, the argument $2\theta$
 runs over a \emph{full} turn, so the cosine vanishes exactly twice, at
-\[
-\theta = \frac{\varphi \pm 90^\circ}{2}.
-\]
+\begin{equation}\theta = \frac{\varphi \pm 90^\circ}{2}.
+\end{equation}
 The two roots are $90^\circ$ apart (Figure~\ref{fig:sweep}). But a frame and the same frame rotated by
 $90^\circ$ consist of \emph{the same pair of lines} --- as shown above, the
 quarter turn merely swaps the arms and reverses one. So the two roots describe
@@ -207,9 +226,8 @@ their signs.
 
 \paragraph{The degenerate case.} $R = 0$ means $A_1 = A_2 = 0$, i.e.\ $f \equiv 0$
 and \emph{every} frame works. The two coefficients are readable off $A\T A$:
-\[
-A\T A = \begin{pmatrix} a^2+c^2 & ab+cd \\ ab+cd & b^2+d^2\end{pmatrix},
-\]
+\begin{equation}A\T A = \begin{pmatrix} a^2+c^2 & ab+cd \\ ab+cd & b^2+d^2\end{pmatrix},
+\end{equation}
 so $A_1$ is its off-diagonal entry and $-2A_2$ the difference of its diagonal
 entries. Both vanish precisely when $A\T A = \sigma^2 I$ --- when $A$ is a
 scalar multiple of an orthogonal matrix. Then $A$ maps the sphere to a sphere,
@@ -267,9 +285,8 @@ $\theta = -80^\circ$ the first arm's image is short; by $\theta = 34^\circ$ it
 has reached the ellipse's long axis. That second quantity is the one the reader
 already cares about --- $\sigma_1$ was defined as a \emph{length}, not as an
 angle. So track it:
-\[
-g(\theta) \;=\; \|A\vv1(\theta)\|^2 ,
-\]
+\begin{equation}g(\theta) \;=\; \|A\vv1(\theta)\|^2 ,
+\end{equation}
 the squared length of the first arm's image. The square is a convenience:
 differentiating $\|A\vv1\|$ itself produces a square root in the denominator,
 while the squared version stays polynomial. Nothing is lost, because squaring is
@@ -301,26 +318,47 @@ slope of $g$.}
 \label{fig:stretch}
 \end{figure}
 
+\paragraph{A tool: differentiating an inner product.} The derivation below, and
+the one in the converse argument, both rest on a single calculus fact --- the
+product rule for inner products. For any two vector-valued functions $u(t)$ and
+$w(t)$,
+\begin{equation}
+\frac{d}{dt}\ip{u(t)}{w(t)} = \ip{u'(t)}{w(t)} + \ip{u(t)}{w'(t)} ,
+\end{equation}
+which is the ordinary product rule applied coordinatewise and summed, using the
+bilinearity of the inner product. Two special cases are all we need. When the two
+slots hold the same function, symmetry of the inner product merges the terms:
+\begin{equation}
+\frac{d}{dt}\ip{u}{u} = 2\ip{u'}{u} .
+\end{equation}
+And when a constant matrix $A$ sits inside, it commutes with the derivative,
+since differentiation acts entrywise and $A$ does not depend on $t$:
+$\frac{d}{dt}(Au) = A u'$.
+
 \paragraph{The identity.} As $\theta$ increases, which way does $\vv1$ move? It
 rotates --- and rotating $\vv1$ infinitesimally pushes it toward $\vv2$, which
 is a quarter turn ahead. In symbols, with $\vv1 = (\cos\theta, \sin\theta)$,
-\[
-\frac{d \vv1}{d\theta} = (-\sin\theta,\, \cos\theta) = \vv2 .
-\]
+\begin{equation}\frac{d \vv1}{d\theta} = (-\sin\theta,\, \cos\theta) = \vv2 .
+\end{equation}
 This is the fact that drove the sign flip in \S\ref{sec:planar}, seen
-infinitesimally rather than a quarter turn at a time. Differentiate $g$ by the
-product rule and the second arm walks in by itself:
-\[
+infinitesimally rather than a quarter turn at a time. Now differentiate
+$g = \ip{A\vv1}{A\vv1}$, taking the steps one at a time:
+\begin{align}
 \frac{dg}{d\theta}
-= \frac{d}{d\theta}\ip{A\vv1}{A\vv1}
-= 2\ip{A \frac{d\vv1}{d\theta}}{A\vv1}
-= 2\ip{A\vv2}{A\vv1}
-= 2 f(\theta) ,
-\]
-so
-\[
-\boxed{\;\frac{dg}{d\theta} \;=\; 2 f(\theta)\;}
-\]
+  &= \frac{d}{d\theta}\ip{A\vv1}{A\vv1}
+     && \text{definition of } g \nonumber\\
+  &= 2\Bip{\tfrac{d}{d\theta}(A\vv1)}{A\vv1}
+     && \text{same-slot product rule} \nonumber\\
+  &= 2\Bip{A\tfrac{d\vv1}{d\theta}}{A\vv1}
+     && \text{$A$ constant, so it passes the derivative} \nonumber\\
+  &= 2\ip{A\vv2}{A\vv1}
+     && \text{using } \tfrac{d\vv1}{d\theta} = \vv2 \nonumber\\
+  &= 2 f(\theta)
+     && \text{definition of } f .
+\end{align}
+So
+\begin{equation}\boxed{\;\frac{dg}{d\theta} \;=\; 2 f(\theta)\;}
+\end{equation}
 The damage function is \emph{half the derivative of the stretch}. Nothing was
 computed: the identity holds because differentiating the first arm produces the
 second, and pairing the second against the first is what $f$ already measures.
@@ -334,38 +372,90 @@ stretch curve in Figure~\ref{fig:stretch}.
 
 That is the equivalence, and both directions are worth having explicitly.
 
-\paragraph{Maximality $\Rightarrow$ orthogonal images.} Let $\vv1$ maximize
-$\|Av\|$ over unit vectors, and let $w$ be any unit vector with $w \perp \vv1$.
-Slide from one to the other along the unit sphere:
-\[
-v(t) \;=\; \cos t\, \vv1 + \sin t \, w, \qquad \|v(t)\| = 1 .
-\]
-Expanding $\|Av(t)\|^2 = \ip{Av(t)}{Av(t)}$ and differentiating at $t=0$,
-\[
-\left.\frac{d}{dt}\right|_{t=0} \|Av(t)\|^2 \;=\; 2\ip{A\vv1}{Aw} .
-\]
-But $t = 0$ is a maximum of a differentiable function, so the derivative
-vanishes there. Hence
-\[
-\ip{A\vv1}{Aw} = 0 \qquad \text{for every } w \perp \vv1 .
-\]
-The images are orthogonal \emph{because $\vv1$ is a peak}: if $A\vv1$ had any
-component tilting toward $Aw$, leaning $\vv1$ a little toward $w$ would buy more
-stretch, contradicting maximality.
+\paragraph{Maximality $\Rightarrow$ orthogonal images.} This is the direction
+that will carry the construction into higher dimensions, so it is worth stating
+carefully. The claim: \emph{if $\vv1$ is the input direction whose image is
+longest, then $A\vv1$ is automatically orthogonal to $Aw$ for every $w$
+perpendicular to $\vv1$.} Perpendicularity of the images is not arranged; it is
+a consequence of maximizing a length.
 
-\paragraph{Orthogonal images $\Rightarrow$ maximality.} Conversely, suppose
-$\ip{A\vv1}{A\vv2} = 0$ and label so that $\sigma_1 \geq \sigma_2$. Any unit
-vector is $v = c_1 \vv1 + c_2 \vv2$ with $c_1^2 + c_2^2 = 1$, and the
-orthogonality of the images collapses the cross terms:
-\[
-\|Av\|^2 = \|c_1 A\vv1 + c_2 A\vv2\|^2
-= c_1^2 \sigma_1^2 + \underbrace{2c_1c_2\ip{A\vv1}{A\vv2}}_{=\,0} + c_2^2\sigma_2^2
+The mechanism is the first-derivative test, applied on the sphere. We want to
+maximize $\|Av\|$ subject to $\|v\| = 1$, so we cannot vary $v$ freely --- any
+admissible variation must keep $v$ on the unit sphere. Fix a maximizer $\vv1$
+and a direction $w \perp \vv1$ to test, and move along the arc
+\begin{equation}v(t) \;=\; \cos t\, \vv1 + \sin t \, w ,
+\end{equation}
+chosen for two reasons: it satisfies $v(0) = \vv1$, so $t = 0$ is the point we
+care about, and it stays on the sphere, since
+$\|v(t)\|^2 = \cos^2 t + \sin^2 t = 1$ (the cross term drops because
+$\ip{\vv1}{w} = 0$). As $t$ moves away from $0$ it tips $\vv1$ toward $w$; so
+$\frac{d}{dt}$ at $t=0$ is the directional derivative of the objective along
+$w$, and \emph{that} is the quantity a maximum forces to vanish.
+
+Restrict the objective to the arc and expand by bilinearity of the inner
+product:
+\begin{equation}\|Av(t)\|^2
+= \|A\vv1\|^2\cos^2 t
+\;+\; 2\,\ip{A\vv1}{Aw}\,\sin t\cos t
+\;+\; \|Aw\|^2 \sin^2 t .
+\end{equation}
+Differentiating, the $\cos^2 t$ and $\sin^2 t$ terms contribute
+$\mp \sin 2t$, which vanish at $t = 0$; the cross term contributes
+$2\ip{A\vv1}{Aw}\cos 2t$, equal to $2\ip{A\vv1}{Aw}$ there. Hence
+\begin{equation}\left.\frac{d}{dt}\right|_{t=0} \|Av(t)\|^2 \;=\; 2\,\ip{A\vv1}{Aw} .
+\end{equation}
+Since $\vv1$ maximizes the objective over the sphere and the arc lies on the
+sphere with $v(0) = \vv1$, the function $t \mapsto \|Av(t)\|^2$ has an interior
+maximum at $t = 0$, so this derivative is zero:
+\begin{equation}\ip{A\vv1}{Aw} = 0 \qquad \text{for every } w \perp \vv1 .
+\end{equation}
+
+What the algebra encodes is geometric. The derivative of the stretch as you tip
+$\vv1$ toward $w$ is exactly (twice) the overlap $\ip{A\vv1}{Aw}$. If that
+overlap were nonzero, the stretch would have nonzero slope in the $w$ direction,
+and a small tip would lengthen the image --- impossible, because $\vv1$ was
+chosen to make it longest. So maximality \emph{is} vanishing overlap in every
+perpendicular direction, which is to say $A\vv1$ is orthogonal to the image of
+the entire hyperplane $\vv1^\perp$. The second-derivative test is consistent and
+needs no separate check: $\left.\frac{d^2}{dt^2}\right|_0 = 2(\|Aw\|^2 - \|A\vv1\|^2) \leq 0$
+precisely because $\|A\vv1\|$ is the largest stretch there is.
+
+\paragraph{Orthogonal images $\Rightarrow$ maximality.} The converse closes the
+loop. Its claim: \emph{take the surviving frame --- a perpendicular input pair
+$\vv1, \vv2$ whose images are also perpendicular --- and the arm with the longer
+image is the direction of maximum stretch.} Where the previous direction started
+from a maximizer and produced orthogonality, this one starts from orthogonality
+and recovers the maximizer.
+
+Note what is assumed. We take $\vv1, \vv2$ orthonormal in the domain (that is
+the frame we impose) \emph{and} their images orthogonal, $\ip{A\vv1}{A\vv2} = 0$
+(that is the surviving property). Label the arms so that the first has the
+longer image, and write $\sigma_1 = \|A\vv1\| \geq \sigma_2 = \|A\vv2\|$.
+
+Because $\vv1, \vv2$ are orthonormal, they are a basis of the plane, so every
+unit input vector is a combination
+\begin{equation}v = c_1 \vv1 + c_2 \vv2, \qquad c_1^2 + c_2^2 = 1 ,
+\end{equation}
+and its image length is governed by how the weight is split. Expanding
+$\|Av\|^2$ and using the orthogonality of the images to kill the cross term:
+\begin{equation}\|Av\|^2 = \|c_1 A\vv1 + c_2 A\vv2\|^2
+= c_1^2 \|A\vv1\|^2 + \underbrace{2c_1c_2\ip{A\vv1}{A\vv2}}_{=\,0} + c_2^2\|A\vv2\|^2
 = c_1^2\sigma_1^2 + c_2^2\sigma_2^2 .
-\]
-This is a weighted average of $\sigma_1^2$ and $\sigma_2^2$ with weights summing
-to one, so it is largest when all the weight sits on the larger value:
-$c_1 = \pm 1$, i.e.\ $v = \pm\vv1$. The surviving frame's first arm is the
-maximizer.
+\end{equation}
+The result is a weighted average of $\sigma_1^2$ and $\sigma_2^2$, with weights
+$c_1^2, c_2^2$ that sum to one. An average of two numbers cannot exceed the
+larger, and reaches it only by placing all the weight there: $c_1^2 = 1$,
+$c_2^2 = 0$, that is $v = \pm\vv1$. So among all unit inputs the longest image
+belongs to $\vv1$ --- it is the maximizer.
+
+This is why the two planar descriptions are one. The surviving frame's long arm
+$\vv1$ is where the stretch peaks, and $\sigma_1$, defined a moment ago merely as
+``the longer of the two image lengths,'' is in fact the largest image length
+there is --- the major semi-axis of the ellipse. The step that made it work,
+$\|Av\|^2 = c_1^2\sigma_1^2 + c_2^2\sigma_2^2$, is worth remembering: once the
+images are orthogonal, the map acts on the $\vv1,\vv2$ coordinates by simple
+scaling, with no interference between the arms. That decoupling is the whole
+point of the frame, and it is the $2\times 2$ shadow of $A = U\Sigma V\T$.
 
 \subsubsection*{The hinge}
 
@@ -376,9 +466,8 @@ dimension.} In $\R^2$ the only choice of $w$ is $\pm\vv2$, so the conclusion
 looks like a statement about a single pair. In $\R^n$ the same curve lies on the
 unit sphere $S^{n-1}$, the same derivative computation goes through unchanged,
 and the conclusion becomes considerably stronger:
-\[
-\ip{A\vv1}{Aw} = 0 \quad\text{for \emph{every} } w \perp \vv1 ,
-\]
+\begin{equation}\ip{A\vv1}{Aw} = 0 \quad\text{for \emph{every} } w \perp \vv1 ,
+\end{equation}
 which is $n-1$ orthogonality relations at once, not one. The maximizer's image
 is orthogonal to the image of the entire hyperplane $\vv1^\perp$.
 
@@ -422,26 +511,22 @@ having no room to recurse into.
 
 Something has quietly happened. Return to the hinge, the statement that at the
 maximizer
-\[
-\ip{A\vv1}{Aw} = 0 \qquad\text{for every } w \perp \vv1,
-\]
+\begin{equation}\ip{A\vv1}{Aw} = 0 \qquad\text{for every } w \perp \vv1,
+\end{equation}
 and move $A$ across the inner product onto the other argument:
-\[
-\ip{A\vv1}{Aw}
+\begin{equation}\ip{A\vv1}{Aw}
 \;=\; (A\vv1)\T (Aw)
 \;=\; \vv1\T A\T A\, w
 \;=\; \ip{A\T A\, \vv1}{\,w} .
-\]
+\end{equation}
 So the hinge says: \emph{the vector $A\T A \vv1$ is orthogonal to every $w$ in
 the hyperplane $\vv1^\perp$.} But the only vectors orthogonal to all of
 $\vv1^\perp$ are the multiples of $\vv1$ itself. Therefore
-\[
-\boxed{\;A\T A\, \vv1 \;=\; \lambda_1 \vv1\;}
-\]
+\begin{equation}\boxed{\;A\T A\, \vv1 \;=\; \lambda_1 \vv1\;}
+\end{equation}
 for some scalar $\lambda_1$ --- and pairing both sides with $\vv1$ identifies it,
-\[
-\lambda_1 = \ip{A\T A \vv1}{\vv1} = \ip{A\vv1}{A\vv1} = \|A\vv1\|^2 = \sigma_1^2 .
-\]
+\begin{equation}\lambda_1 = \ip{A\T A \vv1}{\vv1} = \ip{A\vv1}{A\vv1} = \|A\vv1\|^2 = \sigma_1^2 .
+\end{equation}
 
 \emph{The maximizer is an eigenvector of $A\T A$, with eigenvalue the squared
 stretch.} This was not assumed. It fell out of maximality alone, by one
@@ -453,9 +538,8 @@ previous page did not merely find a convenient frame --- it produced an
 orthonormal basis $\vv1, \dots, \vv n$ of eigenvectors of $A\T A$, with
 nonnegative eigenvalues $\sigma_i^2$, sorted. That is a complete
 diagonalization:
-\[
-A\T A = V \Sigma^2 V\T .
-\]
+\begin{equation}A\T A = V \Sigma^2 V\T .
+\end{equation}
 
 \noindent
 Which is to say: \emph{the variational route has already proved the spectral
@@ -471,9 +555,8 @@ instance $\left(\begin{smallmatrix} 2 & 1 \\ 1 & -3\end{smallmatrix}\right)$ has
 eigenvalues $-3.19$ and $2.19$ --- so no maximization of a squared length will
 ever produce them. The fix is to run the same argument on the \emph{Rayleigh
 quotient}
-\[
-\rho(x) = \frac{x\T S x}{x\T x},
-\]
+\begin{equation}\rho(x) = \frac{x\T S x}{x\T x},
+\end{equation}
 whose stationary points are exactly the eigenvectors of $S$ and whose stationary
 values are the eigenvalues. The proof is the same derivative computation; only
 the functional changes. So the spectral theorem in full generality is this
@@ -516,28 +599,25 @@ The orthogonality half is short enough to see in full. Let $\mathbf{w}_i,
 number $\ip{S\mathbf{w}_i}{\mathbf{w}_j}$ and evaluate it two ways.
 
 Pushing $S$ onto the left argument:
-\[
-\ip{S\mathbf{w}_i}{\mathbf{w}_j}
+\begin{equation}\ip{S\mathbf{w}_i}{\mathbf{w}_j}
 \;=\; \ip{\lambda_i \mathbf{w}_i}{\mathbf{w}_j}
 \;=\; \lambda_i \ip{\mathbf{w}_i}{\mathbf{w}_j}
 \qquad\text{(eigenvector equation, then linearity).}
-\]
+\end{equation}
 Moving $S$ across the inner product to the right argument instead:
-\[
-\ip{S\mathbf{w}_i}{\mathbf{w}_j}
+\begin{equation}\ip{S\mathbf{w}_i}{\mathbf{w}_j}
 \;=\; (S\mathbf{w}_i)\T \mathbf{w}_j
 \;=\; \mathbf{w}_i\T S\T \mathbf{w}_j
 \;=\; \underbrace{\mathbf{w}_i\T S \mathbf{w}_j}_{\text{here } S\T = S}
 \;=\; \ip{\mathbf{w}_i}{S\mathbf{w}_j}
 \;=\; \lambda_j \ip{\mathbf{w}_i}{\mathbf{w}_j}.
-\]
+\end{equation}
 The symmetry hypothesis is used exactly once, at the brace: without $S\T = S$
 the chain breaks and nothing follows. Setting the two evaluations equal,
-\[
-\lambda_i \ip{\mathbf{w}_i}{\mathbf{w}_j} = \lambda_j \ip{\mathbf{w}_i}{\mathbf{w}_j}
+\begin{equation}\lambda_i \ip{\mathbf{w}_i}{\mathbf{w}_j} = \lambda_j \ip{\mathbf{w}_i}{\mathbf{w}_j}
 \quad\Longrightarrow\quad
 (\lambda_i - \lambda_j)\,\ip{\mathbf{w}_i}{\mathbf{w}_j} = 0 .
-\]
+\end{equation}
 Since $\lambda_i \neq \lambda_j$ by assumption, the first factor is nonzero, so
 $\ip{\mathbf{w}_i}{\mathbf{w}_j} = 0$: the eigenvectors are perpendicular. (If
 $\lambda_i = \lambda_j$ the argument says nothing, and correctly so --- within a
@@ -549,9 +629,8 @@ chooses an orthonormal one. This is the same freedom catalogued in
 
 First, $A\T A$ qualifies. It is symmetric because transposing reverses the
 order of a product and undoes itself:
-\[
-(A\T A)\T \;=\; A\T \left(A\T\right)\T \;=\; A\T A .
-\]
+\begin{equation}(A\T A)\T \;=\; A\T \left(A\T\right)\T \;=\; A\T A .
+\end{equation}
 The matrix $A\T A$ is called the \textbf{Gram matrix} of $A$: its $(i,j)$ entry
 is the inner product of column $i$ of $A$ with column $j$, so its diagonal
 holds the squared column lengths and its off-diagonal entries measure how far
@@ -562,16 +641,16 @@ So the spectral theorem applies and supplies an orthonormal eigenbasis
 $\vv1, \dots, \vv n$ with $A\T A \vv i = \lambda_i \vv i$ --- for free, in any
 dimension, with no rotating frame required. Now take any two of them, $i \neq j$,
 and compute the inner product of their images one step at a time:
-\begin{align*}
+\begin{align}
 \ip{A\vv i}{A\vv j}
-  &= (A\vv i)\T (A\vv j)          && \text{definition of the inner product} \\
-  &= \vv i\T A\T A \vv j          && \text{transpose of a product} \\
-  &= \vv i\T (A\T A \vv j)        && \text{regrouping; matrix product is associative} \\
-  &= \vv i\T (\lambda_j \vv j)    && \text{$\vv j$ is an eigenvector of $A\T A$} \\
-  &= \lambda_j \,\vv i\T \vv j    && \text{scalars pull out} \\
-  &= \lambda_j \ip{\vv i}{\vv j}  && \text{definition again} \\
+  &= (A\vv i)\T (A\vv j)          && \text{definition of the inner product} \nonumber \\
+  &= \vv i\T A\T A \vv j          && \text{transpose of a product} \nonumber \\
+  &= \vv i\T (A\T A \vv j)        && \text{regrouping; matrix product is associative} \nonumber \\
+  &= \vv i\T (\lambda_j \vv j)    && \text{$\vv j$ is an eigenvector of $A\T A$} \nonumber \\
+  &= \lambda_j \,\vv i\T \vv j    && \text{scalars pull out} \nonumber \\
+  &= \lambda_j \ip{\vv i}{\vv j}  && \text{definition again} \nonumber \\
   &= 0                            && \text{the $\vv i$ are orthonormal, $i \neq j$.}
-\end{align*}
+\end{align}
 The images are orthogonal automatically. \emph{The eigenvectors of $A\T A$ are
 the frame the whole note is about}, and the rotating-frame picture of
 \S\ref{sec:existence} is what this computation looks like in the plane.
@@ -585,25 +664,22 @@ and the inner product has no reason to vanish.
 \subsubsection*{Why the singular values are real}
 
 $A\T A$ is not merely symmetric but positive semidefinite. For any vector $x$,
-\[
-x\T (A\T A)\, x
+\begin{equation}x\T (A\T A)\, x
 \;=\; \underbrace{(x\T A\T)}_{= \,(Ax)\T} (A x)
 \;=\; (Ax)\T (Ax)
 \;=\; \|Ax\|^2
 \;\geq\; 0 ,
-\]
+\end{equation}
 the last step because a squared length is never negative. Now take $x = \vv i$,
 an eigenvector:
-\[
-\vv i\T (A\T A) \vv i
+\begin{equation}\vv i\T (A\T A) \vv i
 = \vv i\T (\lambda_i \vv i)
 = \lambda_i \underbrace{\vv i\T \vv i}_{=\,\|\vv i\|^2 =\, 1}
 = \lambda_i ,
-\]
+\end{equation}
 and the same quantity equals $\|A\vv i\|^2$ by the display above. Hence
-\[
-\lambda_i = \|A \vv i\|^2 \geq 0,
-\]
+\begin{equation}\lambda_i = \|A \vv i\|^2 \geq 0,
+\end{equation}
 so $\sigma_i := \sqrt{\lambda_i}$ is a well-defined nonnegative real number, and
 it is exactly the stretch factor $\|A\vv i\|$ we wanted.
 
@@ -621,21 +697,18 @@ it, take any symmetric $2\times 2$ matrix $G = \left(\begin{smallmatrix} p & q \
 and ask what its entries become in a frame rotated by $\theta$. Conjugating by
 the rotation $R_\theta = \left(\begin{smallmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{smallmatrix}\right)$
 and reading off the off-diagonal entry gives
-\[
-\left(R_\theta\T\, G\, R_\theta\right)_{12}
+\begin{equation}\left(R_\theta\T\, G\, R_\theta\right)_{12}
 \;=\; q\,(\cos^2\theta - \sin^2\theta) + (r - p)\sin\theta\cos\theta
 \;=\; q \cos 2\theta + \frac{r-p}{2}\,\sin 2\theta .
-\]
+\end{equation}
 Now substitute the Gram matrix, $G = A\T A$, whose entries are
-\[
-p = a^2 + c^2, \qquad q = ab + cd, \qquad r = b^2 + d^2 .
-\]
+\begin{equation}p = a^2 + c^2, \qquad q = ab + cd, \qquad r = b^2 + d^2 .
+\end{equation}
 Then $q = ab+cd$ and $\tfrac{r-p}{2} = -\tfrac12(a^2 - b^2 + c^2 - d^2)$, so
-\[
-\left(R_\theta\T\, A\T A\, R_\theta\right)_{12}
+\begin{equation}\left(R_\theta\T\, A\T A\, R_\theta\right)_{12}
 \;=\; (ab+cd)\cos 2\theta - \tfrac12\left(a^2 - b^2 + c^2 - d^2\right)\sin 2\theta
 \;=\; f(\theta),
-\]
+\end{equation}
 matching the closed form of \S\ref{sec:uniqueness-f} term for term. The
 off-diagonal entry of the Gram matrix in the rotated frame \emph{is} the damage
 function.
@@ -643,11 +716,10 @@ function.
 So diagonalizing $A\T A$ and solving $f(\theta) = 0$ are not two routes to the
 same answer --- they are one problem stated twice. Both ask for the rotation
 that annihilates the off-diagonal entry. And the diagonal entries left behind,
-\[
-\left(R_\theta\T\, A\T A\, R_\theta\right)_{11} = \|A\vv1\|^2 = \sigma_1^2,
+\begin{equation}\left(R_\theta\T\, A\T A\, R_\theta\right)_{11} = \|A\vv1\|^2 = \sigma_1^2,
 \qquad
 \left(R_\theta\T\, A\T A\, R_\theta\right)_{22} = \|A\vv2\|^2 = \sigma_2^2,
-\]
+\end{equation}
 are the squared singular values. For the running example this is checked
 numerically in \S\ref{sec:example}.
 
@@ -689,15 +761,13 @@ hunting the right angle that survives.
 Write $\vv1, \dots, \vv n$ for that special input frame --- the \textbf{right
 singular vectors}. Their images are orthogonal but not unit length, so
 factor out the lengths:
-\[
-A \vv i \;=\; \sigma_i \uu i, \qquad \sigma_i = \|A\vv i\| \geq 0, \qquad \|\uu i\| = 1 .
-\]
+\begin{equation}A \vv i \;=\; \sigma_i \uu i, \qquad \sigma_i = \|A\vv i\| \geq 0, \qquad \|\uu i\| = 1 .
+\end{equation}
 The $\sigma_i$ are the \textbf{singular values} and the $\uu i$ are the
 \textbf{left singular vectors}. Collecting these $n$ equations into matrix form
 gives $AV = U\Sigma$, i.e.
-\[
-\boxed{\; A = U \Sigma V\T \;}
-\]
+\begin{equation}\boxed{\; A = U \Sigma V\T \;}
+\end{equation}
 with $U, V$ orthogonal and $\Sigma$ diagonal. The names \emph{left} and
 \emph{right} are positional --- $U$ sits on the left of the product, $V$ on the
 right --- and carry no deeper meaning.
@@ -734,9 +804,8 @@ space. Its image $A(S^{n-1})$ is an ellipsoid. To see this, write $v$ in the
 $V$-basis as $v = \sum c_i \vv i$ with $\sum c_i^2 = 1$. Then
 $Av = \sum c_i \sigma_i \uu i$, so the image point has coordinate
 $y_i = \sigma_i c_i$ along $\uu i$, and the constraint becomes
-\[
-\sum_i \frac{y_i^2}{\sigma_i^2} \;=\; 1 ,
-\]
+\begin{equation}\sum_i \frac{y_i^2}{\sigma_i^2} \;=\; 1 ,
+\end{equation}
 the standard ellipsoid equation in $u$-coordinates. The $\uu i$ are the axis
 \emph{directions}; the $\sigma_i$ are the axis \emph{lengths}. Neither alone
 describes the ellipsoid --- you need both.
@@ -778,46 +847,39 @@ crushed to zero; the cokernel is never reached.
 This is the four-fundamental-subspaces picture with metric information
 attached. The SVD says $A$ is an isomorphism from row space to column space,
 and diagonalizes it. Explicitly, with $r = \operatorname{rank} A$:
-\[
-\underbrace{\vv1 \dots \vv r}_{\text{row space}}, \quad
+\begin{equation}\underbrace{\vv1 \dots \vv r}_{\text{row space}}, \quad
 \underbrace{\vv{r+1} \dots \vv n}_{\ker A}, \quad
 \underbrace{\uu1 \dots \uu r}_{\text{column space}}, \quad
 \underbrace{\uu{r+1} \dots \uu m}_{\operatorname{coker} A} .
-\]
+\end{equation}
 
 \section{A worked example}
 \label{sec:example}
 
 Take
-\[
-A = \begin{pmatrix} 2 & 1 \\ -0.5 & 1.5 \end{pmatrix},
-\]
+\begin{equation}A = \begin{pmatrix} 2 & 1 \\ -0.5 & 1.5 \end{pmatrix},
+\end{equation}
 a matrix with no special structure --- not symmetric, not a multiple of a
 rotation. Its Gram matrix is
-\[
-A\T A = \begin{pmatrix} 4.25 & 1.25 \\ 1.25 & 3.25 \end{pmatrix},
-\]
+\begin{equation}A\T A = \begin{pmatrix} 4.25 & 1.25 \\ 1.25 & 3.25 \end{pmatrix},
+\end{equation}
 whose off-diagonal entry is nonzero, so the standard basis is \emph{not} the
 frame we want. Feeding $a = 2$, $b = 1$, $c = -0.5$, $d = 1.5$ into the closed
 form of \S\ref{sec:uniqueness-f},
-\[
-f(\theta) = 1.25\cos 2\theta - 0.5 \sin 2\theta,
-\]
+\begin{equation}f(\theta) = 1.25\cos 2\theta - 0.5 \sin 2\theta,
+\end{equation}
 with amplitude $R = 1.3463$ and phase $\varphi = -21.80^\circ$. The roots
 $\theta = (\varphi \pm 90^\circ)/2$ land at $34.10^\circ$ and $-55.90^\circ$ ---
 the crossings marked in Figure~\ref{fig:sweep}. Taking the first,
-\[
-\vv1 = (0.8281,\, 0.5606), \qquad \vv2 = (-0.5606,\, 0.8281),
-\]
+\begin{equation}\vv1 = (0.8281,\, 0.5606), \qquad \vv2 = (-0.5606,\, 0.8281),
+\end{equation}
 and the images are
-\[
-A\vv1 = (2.2168,\, 0.4269), \qquad A\vv2 = (-0.2932,\, 1.5224).
-\]
+\begin{equation}A\vv1 = (2.2168,\, 0.4269), \qquad A\vv2 = (-0.2932,\, 1.5224).
+\end{equation}
 Their inner product is $(2.2168)(-0.2932) + (0.4269)(1.5224) = 0$, as promised.
 Their lengths are the singular values,
-\[
-\sigma_1 = 2.2575, \qquad \sigma_2 = 1.5504,
-\]
+\begin{equation}\sigma_1 = 2.2575, \qquad \sigma_2 = 1.5504,
+\end{equation}
 and normalizing gives $\uu1 = (0.9820, 0.1891)$ and $\uu2 = (-0.1891, 0.9820)$.
 As a check, $\sigma_1\sigma_2 = 3.5 = \det A$.
 
@@ -872,16 +934,14 @@ vice is that nobody has any prior expectation about it, so the SVD's claim ---
 \emph{this is a rotation, a stretch, and a rotation} --- is unsurprising.
 
 For that, the shear is better:
-\[
-A = \begin{pmatrix} 1 & 1 \\ 0 & 1\end{pmatrix} .
-\]
+\begin{equation}A = \begin{pmatrix} 1 & 1 \\ 0 & 1\end{pmatrix} .
+\end{equation}
 It slides every point rightward by an amount equal to its height. Sliding does
 not look like rotate--stretch--rotate. But
-\[
-A\T A = \begin{pmatrix} 1 & 1 \\ 1 & 2\end{pmatrix},
+\begin{equation}A\T A = \begin{pmatrix} 1 & 1 \\ 1 & 2\end{pmatrix},
 \qquad \lambda = \frac{3\pm\sqrt5}{2},
 \qquad \sigma_1 = 1.6180, \quad \sigma_2 = 0.6180 ,
-\]
+\end{equation}
 the golden ratio and its reciprocal, with $\sigma_1\sigma_2 = 1 = \det A$. The
 frames sit at $\vv1$: $58.28^\circ$ and $\uu1$: $31.72^\circ$, differing by a
 rotation of $26.57^\circ$. So the shear \emph{is} a rotate--stretch--rotate,
@@ -982,9 +1042,8 @@ to the signs in item 1.
 \subsection*{Parameter count}
 
 A general $n \times n$ matrix has $n^2$ free parameters. The SVD supplies
-\[
-\underbrace{\tfrac{n(n-1)}{2}}_{V} + \underbrace{n}_{\Sigma} + \underbrace{\tfrac{n(n-1)}{2}}_{U} \;=\; n^2 .
-\]
+\begin{equation}\underbrace{\tfrac{n(n-1)}{2}}_{V} + \underbrace{n}_{\Sigma} + \underbrace{\tfrac{n(n-1)}{2}}_{U} \;=\; n^2 .
+\end{equation}
 It is a reparametrization, not a compression. The information is rearranged
 from ``what each column does'' into ``(input frame, stretches, output frame)'',
 and that arrangement is where the geometry lives.
@@ -1013,14 +1072,12 @@ single eigenbasis: two independent frames rather than one.
 
 For a general square matrix, the two decompositions are largely unrelated.
 
-\[
-A = \begin{pmatrix} 0 & 1 \\ 0 & 0\end{pmatrix}:
+\begin{equation}A = \begin{pmatrix} 0 & 1 \\ 0 & 0\end{pmatrix}:
 \quad \lambda = 0, 0 \quad\text{but}\quad \sigma = 1, 0 .
-\]
-\[
-A = \begin{pmatrix} 1 & t \\ 0 & 1\end{pmatrix}:
+\end{equation}
+\begin{equation}A = \begin{pmatrix} 1 & t \\ 0 & 1\end{pmatrix}:
 \quad \lambda = 1, 1 \ \text{ for all } t, \quad\text{but}\quad \sigma_1 \to \infty \ \text{ as } t \to \infty .
-\]
+\end{equation}
 
 The structural difference: singular vectors are always orthonormal and always
 exist in full; eigenvectors need not be orthogonal, and a defective matrix does
@@ -1062,9 +1119,8 @@ eigendecomposition can be strictly more rigid.
 \label{sec:polar}
 
 For invertible square $A$, the SVD says
-\[
-GL(n) \;=\; O(n) \cdot (\text{positive diagonal}) \cdot O(n),
-\]
+\begin{equation}GL(n) \;=\; O(n) \cdot (\text{positive diagonal}) \cdot O(n),
+\end{equation}
 which regrouped gives the polar decomposition $A = QP$ with
 $Q = UV\T$ orthogonal and $P = V\Sigma V\T$ positive definite. The same content
 in different clothes: $P$ is the pure stretch, $Q$ the pure rotation. For the
