@@ -261,20 +261,76 @@ angle in $f(\theta)$ is a constraint we impose, not a fact we derive.
 
 \subsubsection*{In the plane: the crossing is the peak}
 
-Recall $f(\theta) = \ip{A\vv1(\theta)}{A\vv2(\theta)}$ and let
+So far $f$ has been the only thing measured. But Figure~\ref{fig:sweep} shows
+something else changing as $\theta$ turns: the images grow and shrink. At
+$\theta = -80^\circ$ the first arm's image is short; by $\theta = 34^\circ$ it
+has reached the ellipse's long axis. That second quantity is the one the reader
+already cares about --- $\sigma_1$ was defined as a \emph{length}, not as an
+angle. So track it:
 \[
-g(\theta) \;=\; \|A\vv1(\theta)\|^2
+g(\theta) \;=\; \|A\vv1(\theta)\|^2 ,
 \]
-be the squared stretch of the first arm. Differentiating $g$ and comparing with
-$f$ gives an identity worth stating on its own line:
+the squared length of the first arm's image. The square is a convenience:
+differentiating $\|A\vv1\|$ itself produces a square root in the denominator,
+while the squared version stays polynomial. Nothing is lost, because squaring is
+monotone on nonnegative numbers --- whatever $\theta$ maximizes $g$ maximizes
+$\|A\vv1\|$ too.
+
+Figure~\ref{fig:stretch} sweeps the same frame again, watching $g$ instead of
+$f$. The two crossings of $f$ sit exactly at the peak and the trough of $g$.
+That is not a coincidence, and one observation explains it.
+
+\begin{figure}[htbp]
+\centering
+\input{stretch}
+\vspace{0.9em}
+
+\input{gcurve}
+\caption{\textbf{The same sweep, watching length instead of angle.} Each panel
+shows $\vv1$ at angle $\theta$ and its image $A\vv1$, with the image ellipse
+faint behind it. Since $\vv1$ is a unit vector its image always lands
+\emph{on} the ellipse; what changes is how far around, and so how long the arrow
+is. The first five panels climb --- $1.69, 1.82, 2.06, 2.22$ --- until at
+$\theta = 34.10^\circ$ the arrow reaches the long axis and $\|A\vv1\| = \sigma_1$.
+The last panel jumps to $\theta = -55.90^\circ$, the other extremum, where the
+arrow sits on the short axis and $\|A\vv1\| = \sigma_2$. Below,
+$g(\theta) = \|A\vv1\|^2$ (solid) is plotted against $f(\theta)$ (dashed, the
+same curve as in Figure~\ref{fig:sweep}). The zeros of $f$ fall exactly at the
+peak and trough of $g$ --- which is what $dg/d\theta = 2f$ says: $f$ is the
+slope of $g$.}
+\label{fig:stretch}
+\end{figure}
+
+\paragraph{The identity.} As $\theta$ increases, which way does $\vv1$ move? It
+rotates --- and rotating $\vv1$ infinitesimally pushes it toward $\vv2$, which
+is a quarter turn ahead. In symbols, with $\vv1 = (\cos\theta, \sin\theta)$,
+\[
+\frac{d \vv1}{d\theta} = (-\sin\theta,\, \cos\theta) = \vv2 .
+\]
+This is the fact that drove the sign flip in \S\ref{sec:planar}, seen
+infinitesimally rather than a quarter turn at a time. Differentiate $g$ by the
+product rule and the second arm walks in by itself:
+\[
+\frac{dg}{d\theta}
+= \frac{d}{d\theta}\ip{A\vv1}{A\vv1}
+= 2\ip{A \frac{d\vv1}{d\theta}}{A\vv1}
+= 2\ip{A\vv2}{A\vv1}
+= 2 f(\theta) ,
+\]
+so
 \[
 \boxed{\;\frac{dg}{d\theta} \;=\; 2 f(\theta)\;}
 \]
-The damage function is \emph{half the derivative of the stretch}. So the zero
-crossing of Figure~\ref{fig:sweep} is not merely correlated with the ellipse's
-axis --- it \emph{is} the critical point of $g$. Watching the right angle
-survive and watching the stretch peak are the same observation, made with
-different instruments.
+The damage function is \emph{half the derivative of the stretch}. Nothing was
+computed: the identity holds because differentiating the first arm produces the
+second, and pairing the second against the first is what $f$ already measures.
+
+This settles what the sweep was showing. The zero crossing of
+Figure~\ref{fig:sweep} is not merely correlated with the ellipse's axis --- it
+\emph{is} the critical point of $g$. Where the right angle survives, the stretch
+is stationary; where the stretch peaks, the right angle survives. The sinusoid
+plotted beneath the film strip is, up to a factor of two, the derivative of the
+stretch curve in Figure~\ref{fig:stretch}.
 
 That is the equivalence, and both directions are worth having explicitly.
 
