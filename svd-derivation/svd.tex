@@ -1,0 +1,1043 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{mathtools}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage[colorlinks=true, linkcolor=black, urlcolor=black]{hyperref}
+\usetikzlibrary{arrows.meta, calc, decorations.pathreplacing}
+
+\definecolor{vcol}{HTML}{D85A30}
+\definecolor{ucol}{HTML}{1D9E75}
+\definecolor{gcol}{HTML}{888780}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\T}{^{\mathsf{T}}}
+\newcommand{\ip}[2]{\langle #1, #2 \rangle}
+\newcommand{\vv}[1]{\mathbf{v}_{#1}}
+\newcommand{\uu}[1]{\mathbf{u}_{#1}}
+
+\newtheoremstyle{plainish}{1em}{1em}{\itshape}{}{\bfseries}{.}{ }{}
+\theoremstyle{plainish}
+\newtheorem*{claim}{Claim}
+
+\title{\bfseries Singular Value Decomposition\\[0.3em]
+\large Rediscovered from a question about right angles}
+\author{Paul Agron}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+\noindent
+The singular value decomposition is usually introduced as a factorization
+$A = U\Sigma V\T$, justified by applying the spectral theorem to $A\T A$. That
+is correct, and it explains nothing: the geometry arrives already compressed
+into an algebraic identity, and the reader is asked to accept a powerful theorem
+at the outset in order to reach a result that is, in the end, about ellipses.
+
+This note reverses the order. It starts with a question one can ask about any
+linear map --- \emph{which right angles does it preserve?} --- and answers it
+first in the plane, where the whole situation is visible: a perpendicular frame
+is rotated, its images skew, the skew reverses sign, and somewhere in between
+the right angle survives. That crossing turns out to be the same point at which
+the map stretches hardest, an equivalence one can watch happen and then prove
+both ways.
+
+Only one half of that equivalence survives the trip to $\R^n$, and it is the
+half that matters: at a maximizer, the image cannot tilt. Iterating this yields
+the full frame in any dimension, with the singular values falling out in
+descending order because each step maximizes over what the last one left. The
+construction then turns out to have proved something it was not aiming at ---
+its output is an orthonormal eigenbasis of $A\T A$, which is to say the spectral
+theorem, obtained rather than assumed. The classical statement appears at the
+end as a name for what the geometry already built, not as a hypothesis at the
+start.
+
+The decomposition's existence, uniqueness, parameter count, degenerate cases,
+and relation to the eigendecomposition all follow from the same source. Worked
+examples are small enough to verify by hand; every numerical and symbolic claim
+has been checked.
+\end{abstract}
+
+\section{The question}
+
+Fix a matrix $A \in \R^{m \times n}$ and think of it as a map $\R^n \to \R^m$.
+Linear maps do not, in general, preserve angles. Take
+\[
+A = \begin{pmatrix} 2 & 1 \\ -0.5 & 1.5 \end{pmatrix},
+\]
+which will serve as the running example. The standard basis vectors $e_1, e_2$
+start out perpendicular; their images $Ae_1 = (2, -0.5)$ and $Ae_2 = (1, 1.5)$
+have inner product $1.25$ and sit $70.35^\circ$ apart. The right angle is
+destroyed.
+
+Try a different perpendicular pair and you get a different amount of damage ---
+sometimes more, sometimes less. This suggests a question:
+
+\begin{quote}
+\itshape
+Is there a perpendicular pair whose images are still perpendicular?
+\end{quote}
+
+The answer is yes, for every matrix without exception, and the pair is
+essentially unique. Finding it \emph{is} the singular value decomposition.
+
+The route there runs through three stages, each earning the next.
+\S\S\ref{sec:planar}--\ref{sec:uniqueness-f} settle the plane, where the answer
+can be watched rather than computed. \S\ref{sec:variational} extracts from that
+picture the one statement that survives into $\R^n$, and iterates it into a
+construction valid in any dimension. \S\ref{sec:algebraic} observes that the
+construction has already proved the spectral theorem, and only then states it
+--- as a name for what has been built, rather than as an assumption. Everything
+afterwards follows from the frame: what it is called (\S\ref{sec:naming}), what
+it looks like (\S\ref{sec:ellipsoid}), and what can be deduced from having found
+it (\S\S\ref{sec:choose}--\ref{sec:polar}).
+
+\section{Why such a pair must exist}
+\label{sec:existence}
+
+Take an orthonormal frame $\vv1(\theta), \vv2(\theta)$ and rotate it rigidly as
+$\theta$ varies. Define
+\[
+f(\theta) \;=\; \ip{A\vv1(\theta)}{A\vv2(\theta)},
+\]
+the inner product of the two \emph{images}. This is the quantity we want to
+vanish (Figure~\ref{fig:sweep}): $f > 0$ means the images have closed to an acute angle, $f < 0$ means
+they have opened past a right angle, and $f = 0$ means the right angle
+survived. Note that $f$ measures the \emph{damage}, not the angle itself; the
+input frame stays perpendicular throughout, by construction.
+
+\subsection{The sign flips every quarter turn}
+\label{sec:planar}
+
+Rotate the frame by exactly $90^\circ$. What happens to its two arms?
+
+\begin{itemize}\itemsep0.2em
+\item $\vv1$ rotated by $90^\circ$ becomes $\vv2$. That is what perpendicular means.
+\item $\vv2$ rotated by $90^\circ$ becomes $-\vv1$. Another quarter turn past
+$\vv2$ lands \emph{opposite} $\vv1$, not on it.
+\end{itemize}
+
+\noindent
+So $\vv1(\theta + 90^\circ) = \vv2(\theta)$ and $\vv2(\theta+90^\circ) = -\vv1(\theta)$.
+Apply $A$, use linearity to pull the sign out, and use the symmetry of the
+inner product:
+\[
+f(\theta+90^\circ)
+\;=\; \ip{A\vv2}{A(-\vv1)}
+\;=\; -\ip{A\vv2}{A\vv1}
+\;=\; -\ip{A\vv1}{A\vv2}
+\;=\; -f(\theta).
+\]
+
+This is worth pausing on, because the swap alone would achieve nothing --- the
+inner product is symmetric, so exchanging its two arguments leaves it
+unchanged. \emph{The minus sign is doing all the work.} And that minus sign is
+unavoidable: you cannot rotate an orthonormal pair by a quarter turn and
+recover the same pair, because one arm always comes back reversed.
+
+\begin{claim}
+Every matrix preserves at least one right angle.
+\end{claim}
+
+\begin{proof}
+$f$ is continuous, and $f(\theta_0 + 90^\circ) = -f(\theta_0)$ for any
+$\theta_0$. If $f(\theta_0) = 0$ we are done. Otherwise $f(\theta_0)$ and
+$f(\theta_0+90^\circ)$ have opposite signs, so by the intermediate value
+theorem $f$ vanishes somewhere strictly between.
+\end{proof}
+
+\noindent
+The argument used nothing about $A$ --- not invertibility, not squareness, not
+any structure. In $\R^n$ the same conclusion holds via the spectral theorem
+(\S\ref{sec:algebraic}); the planar version is just the case you can see.
+
+\subsection{How many such angles are there?}
+\label{sec:uniqueness-f}
+
+Continuity gives existence but is silent on count. To settle that, compute $f$
+in closed form. Writing $A = \left(\begin{smallmatrix} a & b \\ c & d\end{smallmatrix}\right)$
+and $\vv1 = (\cos\theta, \sin\theta)$, $\vv2 = (-\sin\theta, \cos\theta)$, expanding
+and collecting terms gives
+\[
+\boxed{\;
+f(\theta) \;=\; (ab + cd)\cos 2\theta \;-\; \tfrac12\left(a^2 - b^2 + c^2 - d^2\right)\sin 2\theta
+\;}
+\]
+Two features of this expression matter, and the second is the important one.
+
+\emph{First}, everything is in $2\theta$, not $\theta$. That is the algebraic
+shadow of the quarter-turn symmetry: advancing $\theta$ by $90^\circ$ advances
+$2\theta$ by $180^\circ$, which negates both $\cos$ and $\sin$. The sign flip
+proved above is visible directly in the formula.
+
+\emph{Second, and crucially, there is no constant term.} $f$ is a pure
+sinusoid oscillating about zero --- not a sinusoid plus an offset. This is why
+the sign flip is not merely a curiosity but a guarantee: a sinusoid with a
+nonzero mean might never reach zero, but this one must.
+
+Write it in amplitude--phase form as
+\[
+f(\theta) = R\cos(2\theta - \varphi), \qquad
+R = \sqrt{A_1^2 + A_2^2}, \quad \varphi = \operatorname{atan2}(A_2, A_1),
+\]
+where $A_1 = ab+cd$ and $A_2 = -\tfrac12(a^2-b^2+c^2-d^2)$. Suppose $R \neq 0$.
+As $\theta$ runs over a half turn $[0^\circ, 180^\circ)$, the argument $2\theta$
+runs over a \emph{full} turn, so the cosine vanishes exactly twice, at
+\[
+\theta = \frac{\varphi \pm 90^\circ}{2}.
+\]
+The two roots are $90^\circ$ apart (Figure~\ref{fig:sweep}). But a frame and the same frame rotated by
+$90^\circ$ consist of \emph{the same pair of lines} --- as shown above, the
+quarter turn merely swaps the arms and reverses one. So the two roots describe
+one geometric object.
+
+\begin{claim}
+Unless $R = 0$, the frame is unique: exactly one perpendicular pair of
+directions has perpendicular images, up to relabelling the arms and flipping
+their signs.
+\end{claim}
+
+\paragraph{The degenerate case.} $R = 0$ means $A_1 = A_2 = 0$, i.e.\ $f \equiv 0$
+and \emph{every} frame works. The two coefficients are readable off $A\T A$:
+\[
+A\T A = \begin{pmatrix} a^2+c^2 & ab+cd \\ ab+cd & b^2+d^2\end{pmatrix},
+\]
+so $A_1$ is its off-diagonal entry and $-2A_2$ the difference of its diagonal
+entries. Both vanish precisely when $A\T A = \sigma^2 I$ --- when $A$ is a
+scalar multiple of an orthogonal matrix. Then $A$ maps the sphere to a sphere,
+there is no direction of maximum stretch, and no frame is distinguished. The
+generic case and the degenerate case both fall out of the one formula.
+
+\begin{figure}[htbp]
+\centering
+\input{figs}
+\vspace{1.2em}
+
+\input{fcurve}
+\caption{\textbf{Sweeping the frame.} Each panel shows an orthonormal input
+frame (left, always perpendicular) and its image under
+$A = \left(\begin{smallmatrix}2 & 1\\ -0.5 & 1.5\end{smallmatrix}\right)$
+(right, generally not). The number below each image is the angle between
+$A\vv1$ and $A\vv2$; the shaded wedge makes it visible. As $\theta$ increases
+the wedge narrows to $70^\circ$, then widens back through $90^\circ$ --- the
+highlighted panel, where the right angle survives --- and on past
+$110^\circ$. The plot below tracks $f(\theta)$ over the full half-turn: a pure
+sinusoid in $2\theta$ with no vertical offset, crossing zero exactly twice, at
+$34.10^\circ$ and $-55.90^\circ$. Those two crossings are $90^\circ$ apart and
+describe the same pair of lines.}
+\label{fig:sweep}
+\end{figure}
+
+\subsection{From two dimensions to \texorpdfstring{$n$}{n}}
+\label{sec:variational}
+
+The rotating frame is a planar device. In $\R^n$ there is no single angle to
+turn: an orthonormal frame has $n(n-1)/2$ parameters, the images must satisfy
+$n(n-1)/2$ orthogonality conditions, and the intermediate value theorem --- one
+equation, one unknown --- has nothing to say about a coupled system that size.
+Fixing up one pair disturbs another.
+
+This section builds the bridge. The plan is to establish, \emph{in the plane
+where both sides can be seen}, that the surviving frame and the direction of
+maximum stretch are the same object; then to notice that one half of that
+equivalence never used the dimension; then to recurse on it.
+
+\paragraph{A false start, worth naming.} It is tempting to hope that
+orthogonality in the domain forces orthogonality in the image, or the reverse.
+Neither holds. The shear sends the perpendicular pair $e_1, e_2$ to $(1,0)$ and
+$(1,1)$, which are $45^\circ$ apart; and pulling a perpendicular pair back
+through $A^{-1}$ generically yields a skew pair. Perpendicularity is not
+preserved in either direction --- which is exactly why the question ``is there
+\emph{some} frame it is preserved for?'' has content. The domain-side right
+angle in $f(\theta)$ is a constraint we impose, not a fact we derive.
+
+\subsubsection*{In the plane: the crossing is the peak}
+
+Recall $f(\theta) = \ip{A\vv1(\theta)}{A\vv2(\theta)}$ and let
+\[
+g(\theta) \;=\; \|A\vv1(\theta)\|^2
+\]
+be the squared stretch of the first arm. Differentiating $g$ and comparing with
+$f$ gives an identity worth stating on its own line:
+\[
+\boxed{\;\frac{dg}{d\theta} \;=\; 2 f(\theta)\;}
+\]
+The damage function is \emph{half the derivative of the stretch}. So the zero
+crossing of Figure~\ref{fig:sweep} is not merely correlated with the ellipse's
+axis --- it \emph{is} the critical point of $g$. Watching the right angle
+survive and watching the stretch peak are the same observation, made with
+different instruments.
+
+That is the equivalence, and both directions are worth having explicitly.
+
+\paragraph{Maximality $\Rightarrow$ orthogonal images.} Let $\vv1$ maximize
+$\|Av\|$ over unit vectors, and let $w$ be any unit vector with $w \perp \vv1$.
+Slide from one to the other along the unit sphere:
+\[
+v(t) \;=\; \cos t\, \vv1 + \sin t \, w, \qquad \|v(t)\| = 1 .
+\]
+Expanding $\|Av(t)\|^2 = \ip{Av(t)}{Av(t)}$ and differentiating at $t=0$,
+\[
+\left.\frac{d}{dt}\right|_{t=0} \|Av(t)\|^2 \;=\; 2\ip{A\vv1}{Aw} .
+\]
+But $t = 0$ is a maximum of a differentiable function, so the derivative
+vanishes there. Hence
+\[
+\ip{A\vv1}{Aw} = 0 \qquad \text{for every } w \perp \vv1 .
+\]
+The images are orthogonal \emph{because $\vv1$ is a peak}: if $A\vv1$ had any
+component tilting toward $Aw$, leaning $\vv1$ a little toward $w$ would buy more
+stretch, contradicting maximality.
+
+\paragraph{Orthogonal images $\Rightarrow$ maximality.} Conversely, suppose
+$\ip{A\vv1}{A\vv2} = 0$ and label so that $\sigma_1 \geq \sigma_2$. Any unit
+vector is $v = c_1 \vv1 + c_2 \vv2$ with $c_1^2 + c_2^2 = 1$, and the
+orthogonality of the images collapses the cross terms:
+\[
+\|Av\|^2 = \|c_1 A\vv1 + c_2 A\vv2\|^2
+= c_1^2 \sigma_1^2 + \underbrace{2c_1c_2\ip{A\vv1}{A\vv2}}_{=\,0} + c_2^2\sigma_2^2
+= c_1^2\sigma_1^2 + c_2^2\sigma_2^2 .
+\]
+This is a weighted average of $\sigma_1^2$ and $\sigma_2^2$ with weights summing
+to one, so it is largest when all the weight sits on the larger value:
+$c_1 = \pm 1$, i.e.\ $v = \pm\vv1$. The surviving frame's first arm is the
+maximizer.
+
+\subsubsection*{The hinge}
+
+Now look back at the first of those two arguments and ask what it used. A unit
+vector $\vv1$; a perpendicular unit vector $w$; the curve
+$\cos t\,\vv1 + \sin t\,w$; one derivative. \emph{Nothing in it mentions the
+dimension.} In $\R^2$ the only choice of $w$ is $\pm\vv2$, so the conclusion
+looks like a statement about a single pair. In $\R^n$ the same curve lies on the
+unit sphere $S^{n-1}$, the same derivative computation goes through unchanged,
+and the conclusion becomes considerably stronger:
+\[
+\ip{A\vv1}{Aw} = 0 \quad\text{for \emph{every} } w \perp \vv1 ,
+\]
+which is $n-1$ orthogonality relations at once, not one. The maximizer's image
+is orthogonal to the image of the entire hyperplane $\vv1^\perp$.
+
+The other direction does not need to make the trip. It was there to show that
+the two planar descriptions coincide; having established that, we keep only the
+half that travels.
+
+\subsubsection*{In \texorpdfstring{$\R^n$}{R\^{}n}: recursion}
+
+The construction now runs by induction, and each step is the hinge applied once.
+
+\begin{enumerate}\itemsep0.35em
+\item The function $v \mapsto \|Av\|$ is continuous and $S^{n-1}$ is compact, so
+a maximizer exists. Call it $\vv1$ and set $\sigma_1 = \|A\vv1\|$.
+\item By the hinge, $\ip{A\vv1}{Aw} = 0$ for every $w \perp \vv1$. So
+\emph{whatever} we choose next from $\vv1^\perp$, its image is already
+orthogonal to $A\vv1$ --- for free, with no further work.
+\item Restrict $A$ to the hyperplane $\vv1^\perp \cong \R^{n-1}$ and repeat:
+maximize $\|Av\|$ over the unit sphere of $\vv1^\perp$ to get $\vv2$, with
+$\sigma_2 = \|A\vv2\| \leq \sigma_1$. Applying the hinge \emph{within} that
+hyperplane gives $\ip{A\vv2}{Aw} = 0$ for all $w \in \vv1^\perp$ with
+$w \perp \vv2$.
+\item Continue. After $n$ steps the frame $\vv1, \dots, \vv n$ is orthonormal by
+construction, and its images are pairwise orthogonal: for $i < j$, step $i$'s
+hinge applies because $\vv j$ lies in $\vv i^\perp$.
+\end{enumerate}
+
+\noindent
+Two features of this deserve comment. First, the $\sigma_i$ come out
+\emph{sorted}, $\sigma_1 \geq \sigma_2 \geq \dots$, automatically: each step
+maximizes over a subset of the previous step's domain, so it cannot do better.
+The descending convention is not a convention here --- it is what the
+construction produces. Second, step 2 is doing all the work, and it is doing it
+\emph{before} the next vector is chosen: maximality of $\vv1$ pre-emptively
+guarantees orthogonality against every future choice. That is what makes the
+recursion compose, and it is precisely what the planar picture could not show,
+having no room to recurse into.
+
+\subsubsection*{What the construction has already proved}
+\label{sec:bridge}
+
+Something has quietly happened. Return to the hinge, the statement that at the
+maximizer
+\[
+\ip{A\vv1}{Aw} = 0 \qquad\text{for every } w \perp \vv1,
+\]
+and move $A$ across the inner product onto the other argument:
+\[
+\ip{A\vv1}{Aw}
+\;=\; (A\vv1)\T (Aw)
+\;=\; \vv1\T A\T A\, w
+\;=\; \ip{A\T A\, \vv1}{\,w} .
+\]
+So the hinge says: \emph{the vector $A\T A \vv1$ is orthogonal to every $w$ in
+the hyperplane $\vv1^\perp$.} But the only vectors orthogonal to all of
+$\vv1^\perp$ are the multiples of $\vv1$ itself. Therefore
+\[
+\boxed{\;A\T A\, \vv1 \;=\; \lambda_1 \vv1\;}
+\]
+for some scalar $\lambda_1$ --- and pairing both sides with $\vv1$ identifies it,
+\[
+\lambda_1 = \ip{A\T A \vv1}{\vv1} = \ip{A\vv1}{A\vv1} = \|A\vv1\|^2 = \sigma_1^2 .
+\]
+
+\emph{The maximizer is an eigenvector of $A\T A$, with eigenvalue the squared
+stretch.} This was not assumed. It fell out of maximality alone, by one
+application of the adjoint move.
+
+And the same holds at every step of the recursion, since each $\vv i$ maximizes
+over a subspace on which the identical argument runs. So the construction of the
+previous page did not merely find a convenient frame --- it produced an
+orthonormal basis $\vv1, \dots, \vv n$ of eigenvectors of $A\T A$, with
+nonnegative eigenvalues $\sigma_i^2$, sorted. That is a complete
+diagonalization:
+\[
+A\T A = V \Sigma^2 V\T .
+\]
+
+\noindent
+Which is to say: \emph{the variational route has already proved the spectral
+theorem for $A\T A$.} The next section does not introduce new machinery. It
+names this result in the standard language, states it for symmetric matrices in
+general rather than for Gram matrices in particular, and notes that once one has
+it, the entire construction collapses to a single sentence.
+
+\paragraph{One caveat.} The route above is specific to matrices of the form
+$A\T A$, because it maximizes $\|Ax\|^2$, a quantity that is automatically
+nonnegative. A general symmetric $S$ can have negative eigenvalues --- for
+instance $\left(\begin{smallmatrix} 2 & 1 \\ 1 & -3\end{smallmatrix}\right)$ has
+eigenvalues $-3.19$ and $2.19$ --- so no maximization of a squared length will
+ever produce them. The fix is to run the same argument on the \emph{Rayleigh
+quotient}
+\[
+\rho(x) = \frac{x\T S x}{x\T x},
+\]
+whose stationary points are exactly the eigenvectors of $S$ and whose stationary
+values are the eigenvalues. The proof is the same derivative computation; only
+the functional changes. So the spectral theorem in full generality is this
+section's argument with $\|Ax\|^2$ replaced by $\rho(x)$, and
+$\rho(x) = \|Ax\|^2$ on the unit sphere when $S = A\T A$ recovers what we did.
+
+\subsection{The same fact, algebraically}
+\label{sec:algebraic}
+
+The previous section arrived at $A\T A \vv i = \sigma_i^2 \vv i$ with the
+$\vv i$ orthonormal. That statement has a name, and stating it for a general
+symmetric matrix rather than for $A\T A$ costs nothing --- the hypothesis that
+actually does the work is symmetry, not the particular form of the matrix.
+
+\begin{quote}
+\textbf{Spectral theorem.} \itshape Let $S$ be a real symmetric $n \times n$
+matrix, $S = S\T$. Then $S$ has $n$ real eigenvalues $\lambda_1, \dots,
+\lambda_n$ (with multiplicity), and $\R^n$ admits an \emph{orthonormal} basis
+$\mathbf{w}_1, \dots, \mathbf{w}_n$ of eigenvectors, $S\mathbf{w}_i = \lambda_i
+\mathbf{w}_i$. Equivalently $S = W \Lambda W\T$ with $W$ orthogonal and
+$\Lambda$ diagonal.
+\end{quote}
+
+\noindent
+Two clauses matter here and neither is free. \emph{Real} eigenvalues: a general
+real matrix can have complex ones, as a rotation does. \emph{Orthonormal}
+eigenbasis: a general matrix's eigenvectors need not be perpendicular, and a
+defective matrix does not have a full set of them at all. Symmetry buys both.
+
+Taking the theorem as given --- it is standard, and \S\ref{sec:bridge} sketched
+its proof --- the whole of \S\ref{sec:existence} and \S\ref{sec:variational}
+collapses to three lines, which is the point of this section. The rotating frame
+and the greedy maximization were two ways of finding by hand what the following
+computation supplies at once, in any dimension.
+
+\subsubsection*{Where the symmetry enters}
+
+The orthogonality half is short enough to see in full. Let $\mathbf{w}_i,
+\mathbf{w}_j$ be eigenvectors with $\lambda_i \neq \lambda_j$. Start from the
+number $\ip{S\mathbf{w}_i}{\mathbf{w}_j}$ and evaluate it two ways.
+
+Pushing $S$ onto the left argument:
+\[
+\ip{S\mathbf{w}_i}{\mathbf{w}_j}
+\;=\; \ip{\lambda_i \mathbf{w}_i}{\mathbf{w}_j}
+\;=\; \lambda_i \ip{\mathbf{w}_i}{\mathbf{w}_j}
+\qquad\text{(eigenvector equation, then linearity).}
+\]
+Moving $S$ across the inner product to the right argument instead:
+\[
+\ip{S\mathbf{w}_i}{\mathbf{w}_j}
+\;=\; (S\mathbf{w}_i)\T \mathbf{w}_j
+\;=\; \mathbf{w}_i\T S\T \mathbf{w}_j
+\;=\; \underbrace{\mathbf{w}_i\T S \mathbf{w}_j}_{\text{here } S\T = S}
+\;=\; \ip{\mathbf{w}_i}{S\mathbf{w}_j}
+\;=\; \lambda_j \ip{\mathbf{w}_i}{\mathbf{w}_j}.
+\]
+The symmetry hypothesis is used exactly once, at the brace: without $S\T = S$
+the chain breaks and nothing follows. Setting the two evaluations equal,
+\[
+\lambda_i \ip{\mathbf{w}_i}{\mathbf{w}_j} = \lambda_j \ip{\mathbf{w}_i}{\mathbf{w}_j}
+\quad\Longrightarrow\quad
+(\lambda_i - \lambda_j)\,\ip{\mathbf{w}_i}{\mathbf{w}_j} = 0 .
+\]
+Since $\lambda_i \neq \lambda_j$ by assumption, the first factor is nonzero, so
+$\ip{\mathbf{w}_i}{\mathbf{w}_j} = 0$: the eigenvectors are perpendicular. (If
+$\lambda_i = \lambda_j$ the argument says nothing, and correctly so --- within a
+repeated eigenvalue's eigenspace any basis is an eigenbasis, so one simply
+chooses an orthonormal one. This is the same freedom catalogued in
+\S\ref{sec:uniqueness} for repeated singular values.)
+
+\subsubsection*{Applying it to \texorpdfstring{$A\T A$}{A transpose A}}
+
+First, $A\T A$ qualifies. It is symmetric because transposing reverses the
+order of a product and undoes itself:
+\[
+(A\T A)\T \;=\; A\T \left(A\T\right)\T \;=\; A\T A .
+\]
+The matrix $A\T A$ is called the \textbf{Gram matrix} of $A$: its $(i,j)$ entry
+is the inner product of column $i$ of $A$ with column $j$, so its diagonal
+holds the squared column lengths and its off-diagonal entries measure how far
+from perpendicular the columns are. (Throughout, $(M)_{ij}$ denotes the entry of
+$M$ in row $i$, column $j$.)
+
+So the spectral theorem applies and supplies an orthonormal eigenbasis
+$\vv1, \dots, \vv n$ with $A\T A \vv i = \lambda_i \vv i$ --- for free, in any
+dimension, with no rotating frame required. Now take any two of them, $i \neq j$,
+and compute the inner product of their images one step at a time:
+\begin{align*}
+\ip{A\vv i}{A\vv j}
+  &= (A\vv i)\T (A\vv j)          && \text{definition of the inner product} \\
+  &= \vv i\T A\T A \vv j          && \text{transpose of a product} \\
+  &= \vv i\T (A\T A \vv j)        && \text{regrouping; matrix product is associative} \\
+  &= \vv i\T (\lambda_j \vv j)    && \text{$\vv j$ is an eigenvector of $A\T A$} \\
+  &= \lambda_j \,\vv i\T \vv j    && \text{scalars pull out} \\
+  &= \lambda_j \ip{\vv i}{\vv j}  && \text{definition again} \\
+  &= 0                            && \text{the $\vv i$ are orthonormal, $i \neq j$.}
+\end{align*}
+The images are orthogonal automatically. \emph{The eigenvectors of $A\T A$ are
+the frame the whole note is about}, and the rotating-frame picture of
+\S\ref{sec:existence} is what this computation looks like in the plane.
+
+Notice which step did the work. The eigenvector equation converted the
+\emph{operator} $A\T A$ into the \emph{scalar} $\lambda_j$, after which
+orthogonality of the $\vv i$ finished the job. Feed in a non-eigenvector and
+line four fails: $A\T A \vv j$ is some other vector, not a multiple of $\vv j$,
+and the inner product has no reason to vanish.
+
+\subsubsection*{Why the singular values are real}
+
+$A\T A$ is not merely symmetric but positive semidefinite. For any vector $x$,
+\[
+x\T (A\T A)\, x
+\;=\; \underbrace{(x\T A\T)}_{= \,(Ax)\T} (A x)
+\;=\; (Ax)\T (Ax)
+\;=\; \|Ax\|^2
+\;\geq\; 0 ,
+\]
+the last step because a squared length is never negative. Now take $x = \vv i$,
+an eigenvector:
+\[
+\vv i\T (A\T A) \vv i
+= \vv i\T (\lambda_i \vv i)
+= \lambda_i \underbrace{\vv i\T \vv i}_{=\,\|\vv i\|^2 =\, 1}
+= \lambda_i ,
+\]
+and the same quantity equals $\|A\vv i\|^2$ by the display above. Hence
+\[
+\lambda_i = \|A \vv i\|^2 \geq 0,
+\]
+so $\sigma_i := \sqrt{\lambda_i}$ is a well-defined nonnegative real number, and
+it is exactly the stretch factor $\|A\vv i\|$ we wanted.
+
+This step deserves its own paragraph because it is easy to skip past. Symmetry
+alone gives \emph{real} eigenvalues, but real numbers can be negative, and
+$\sqrt{\lambda_i}$ would then be imaginary --- $\Sigma$ would not exist. What
+rules that out is positive semidefiniteness, which comes from $A\T A$ being a
+Gram matrix rather than from its symmetry. Both properties are needed, and they
+are different properties.
+
+\subsubsection*{The same statement in the plane}
+
+The two arguments are not merely analogous; they are the same equation. To see
+it, take any symmetric $2\times 2$ matrix $G = \left(\begin{smallmatrix} p & q \\ q & r\end{smallmatrix}\right)$
+and ask what its entries become in a frame rotated by $\theta$. Conjugating by
+the rotation $R_\theta = \left(\begin{smallmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{smallmatrix}\right)$
+and reading off the off-diagonal entry gives
+\[
+\left(R_\theta\T\, G\, R_\theta\right)_{12}
+\;=\; q\,(\cos^2\theta - \sin^2\theta) + (r - p)\sin\theta\cos\theta
+\;=\; q \cos 2\theta + \frac{r-p}{2}\,\sin 2\theta .
+\]
+Now substitute the Gram matrix, $G = A\T A$, whose entries are
+\[
+p = a^2 + c^2, \qquad q = ab + cd, \qquad r = b^2 + d^2 .
+\]
+Then $q = ab+cd$ and $\tfrac{r-p}{2} = -\tfrac12(a^2 - b^2 + c^2 - d^2)$, so
+\[
+\left(R_\theta\T\, A\T A\, R_\theta\right)_{12}
+\;=\; (ab+cd)\cos 2\theta - \tfrac12\left(a^2 - b^2 + c^2 - d^2\right)\sin 2\theta
+\;=\; f(\theta),
+\]
+matching the closed form of \S\ref{sec:uniqueness-f} term for term. The
+off-diagonal entry of the Gram matrix in the rotated frame \emph{is} the damage
+function.
+
+So diagonalizing $A\T A$ and solving $f(\theta) = 0$ are not two routes to the
+same answer --- they are one problem stated twice. Both ask for the rotation
+that annihilates the off-diagonal entry. And the diagonal entries left behind,
+\[
+\left(R_\theta\T\, A\T A\, R_\theta\right)_{11} = \|A\vv1\|^2 = \sigma_1^2,
+\qquad
+\left(R_\theta\T\, A\T A\, R_\theta\right)_{22} = \|A\vv2\|^2 = \sigma_2^2,
+\]
+are the squared singular values. For the running example this is checked
+numerically in \S\ref{sec:example}.
+
+\subsubsection*{Three routes, one frame}
+
+\begin{center}
+\begin{tabular}{@{}p{2.9cm}p{4.6cm}p{4.6cm}@{}}
+\toprule
+& \textbf{Shows} & \textbf{Costs} \\
+\midrule
+Rotating frame \newline (\S\ref{sec:existence})
+  & why a crossing is forced, and where it sits: the fulcrum where the
+    distortion cancels
+  & planar only; no route to $\R^n$ \\[0.4em]
+Variational \newline (\S\ref{sec:variational})
+  & constructive; explains why the $\sigma_i$ come out sorted; proves the
+    spectral theorem rather than assuming it
+  & no picture above $\R^2$; stationarity replaces balance \\[0.4em]
+Spectral \newline (\S\ref{sec:algebraic})
+  & fastest; every dimension at once
+  & most opaque; the geometry is invisible in the statement \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+These are not three competing theorems. They are one theorem approached from
+three distances. The variational route is the spectral theorem's proof with the
+geometry left in; the spectral statement is that proof with the geometry
+compressed out; and the rotating frame is what both look like in the one
+dimension where you can watch them happen. The planar picture is worth keeping
+even though it does not scale, because it shows what the machinery above it is
+\emph{for}: the greedy maximization and the eigenvectors are both, in the end,
+hunting the right angle that survives.
+
+\section{Naming the pieces}
+\label{sec:naming}
+
+Write $\vv1, \dots, \vv n$ for that special input frame --- the \textbf{right
+singular vectors}. Their images are orthogonal but not unit length, so
+factor out the lengths:
+\[
+A \vv i \;=\; \sigma_i \uu i, \qquad \sigma_i = \|A\vv i\| \geq 0, \qquad \|\uu i\| = 1 .
+\]
+The $\sigma_i$ are the \textbf{singular values} and the $\uu i$ are the
+\textbf{left singular vectors}. Collecting these $n$ equations into matrix form
+gives $AV = U\Sigma$, i.e.
+\[
+\boxed{\; A = U \Sigma V\T \;}
+\]
+with $U, V$ orthogonal and $\Sigma$ diagonal. The names \emph{left} and
+\emph{right} are positional --- $U$ sits on the left of the product, $V$ on the
+right --- and carry no deeper meaning.
+
+Note the asymmetry in how the two frames arise. \emph{$V$ is chosen; $U$ is a
+consequence.} We select the input frame by a property it has (its images are
+orthogonal), and the output frame is then whatever we happen to land on.
+
+\subsection*{Four ways to say the same thing}
+
+The right singular vectors admit several characterizations, all equivalent:
+
+\begin{description}\itemsep0.4em
+\item[Geometric.] The orthonormal input frame whose images stay orthogonal.
+Every other orthonormal frame comes out skewed.
+\item[Metric.] The frame that lands on the principal axes of the image
+ellipsoid (\S\ref{sec:ellipsoid}), with $\sigma_i$ the semi-axis lengths.
+\item[Variational.] The frame obtained by greedy maximization:
+$\vv1 = \arg\max_{\|v\|=1} \|Av\|$, then $\vv2$ the same among unit vectors
+orthogonal to $\vv1$, and so on.
+\item[Algebraic.] The eigenvectors of $A\T A$.
+\end{description}
+
+The first is the one to keep in your head; the last is the one you compute
+with. Symmetrically, the left singular vectors are the eigenvectors of $AA\T$.
+Since $A\T A$ and $AA\T$ share the same nonzero eigenvalues $\sigma_i^2$, one
+$\Sigma$ serves both frames.
+
+\section{The ellipsoid}
+\label{sec:ellipsoid}
+
+Let $S^{n-1} = \{v \in \R^n : \|v\| = 1\}$ be the unit sphere in the input
+space. Its image $A(S^{n-1})$ is an ellipsoid. To see this, write $v$ in the
+$V$-basis as $v = \sum c_i \vv i$ with $\sum c_i^2 = 1$. Then
+$Av = \sum c_i \sigma_i \uu i$, so the image point has coordinate
+$y_i = \sigma_i c_i$ along $\uu i$, and the constraint becomes
+\[
+\sum_i \frac{y_i^2}{\sigma_i^2} \;=\; 1 ,
+\]
+the standard ellipsoid equation in $u$-coordinates. The $\uu i$ are the axis
+\emph{directions}; the $\sigma_i$ are the axis \emph{lengths}. Neither alone
+describes the ellipsoid --- you need both.
+
+This gives the reading of the factorization as a sequence of three motions.
+Right to left in $U\Sigma V\T$:
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+$V\T$ & rotate the input so that $\vv i$ lands on the $i$th coordinate axis \\
+$\Sigma$ & stretch axis $i$ by $\sigma_i$ \\
+$U$ & rotate so that the coordinate axes land on the $\uu i$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+\emph{Every linear map is a rotation, then an axis-aligned scaling, then
+another rotation.} A shear does not look like that --- it looks like sliding
+--- but it is one, and the SVD is the change of viewpoint that reveals it.
+
+\subsection*{Degenerate cases}
+
+The word ``ellipsoid'' must be read loosely. If some $\sigma_i = 0$ the
+ellipsoid is flattened in that direction. If $m > n$ it is a lower-dimensional
+ellipsoid embedded in a larger space. If $m < n$ the sphere maps onto the
+\emph{solid} ellipsoid, not just its surface, because vectors with a kernel
+component land strictly inside.
+
+The statement that covers every case at once: for $A$ of rank $r$,
+\begin{quote}
+$A$ maps the unit sphere of the \emph{row space} bijectively onto an
+$(r{-}1)$-dimensional ellipsoid surface in the \emph{column space}, with
+semi-axes $\sigma_1, \dots, \sigma_r$ along $\uu1, \dots, \uu r$. The kernel is
+crushed to zero; the cokernel is never reached.
+\end{quote}
+
+This is the four-fundamental-subspaces picture with metric information
+attached. The SVD says $A$ is an isomorphism from row space to column space,
+and diagonalizes it. Explicitly, with $r = \operatorname{rank} A$:
+\[
+\underbrace{\vv1 \dots \vv r}_{\text{row space}}, \quad
+\underbrace{\vv{r+1} \dots \vv n}_{\ker A}, \quad
+\underbrace{\uu1 \dots \uu r}_{\text{column space}}, \quad
+\underbrace{\uu{r+1} \dots \uu m}_{\operatorname{coker} A} .
+\]
+
+\section{A worked example}
+\label{sec:example}
+
+Take
+\[
+A = \begin{pmatrix} 2 & 1 \\ -0.5 & 1.5 \end{pmatrix},
+\]
+a matrix with no special structure --- not symmetric, not a multiple of a
+rotation. Its Gram matrix is
+\[
+A\T A = \begin{pmatrix} 4.25 & 1.25 \\ 1.25 & 3.25 \end{pmatrix},
+\]
+whose off-diagonal entry is nonzero, so the standard basis is \emph{not} the
+frame we want. Feeding $a = 2$, $b = 1$, $c = -0.5$, $d = 1.5$ into the closed
+form of \S\ref{sec:uniqueness-f},
+\[
+f(\theta) = 1.25\cos 2\theta - 0.5 \sin 2\theta,
+\]
+with amplitude $R = 1.3463$ and phase $\varphi = -21.80^\circ$. The roots
+$\theta = (\varphi \pm 90^\circ)/2$ land at $34.10^\circ$ and $-55.90^\circ$ ---
+the crossings marked in Figure~\ref{fig:sweep}. Taking the first,
+\[
+\vv1 = (0.8281,\, 0.5606), \qquad \vv2 = (-0.5606,\, 0.8281),
+\]
+and the images are
+\[
+A\vv1 = (2.2168,\, 0.4269), \qquad A\vv2 = (-0.2932,\, 1.5224).
+\]
+Their inner product is $(2.2168)(-0.2932) + (0.4269)(1.5224) = 0$, as promised.
+Their lengths are the singular values,
+\[
+\sigma_1 = 2.2575, \qquad \sigma_2 = 1.5504,
+\]
+and normalizing gives $\uu1 = (0.9820, 0.1891)$ and $\uu2 = (-0.1891, 0.9820)$.
+As a check, $\sigma_1\sigma_2 = 3.5 = \det A$.
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[scale=1.4, >={Stealth[length=2mm]}]
+
+\begin{scope}
+  \draw[gcol!50, thin] (-1.35,0) -- (1.35,0);
+  \draw[gcol!50, thin] (0,-1.35) -- (0,1.35);
+  \draw[gcol, thin] (0,0) circle (1);
+  \draw[->, vcol, very thick] (0,0) -- (0.8281,0.5606);
+  \draw[->, ucol, very thick] (0,0) -- (-0.5606,0.8281);
+  \node[vcol, font=\small] at (1.06,0.68) {$\vv1$};
+  \node[ucol, font=\small] at (-0.76,0.99) {$\vv2$};
+  \node[gcol, font=\scriptsize] at (0,-1.62) {$\vv1$ at $34.10^\circ$};
+\end{scope}
+
+\node at (2.15,0) {$\xmapsto{\;\;A\;\;}$};
+
+\begin{scope}[xshift=4.6cm]
+  \draw[gcol!50, thin] (-2.45,0) -- (2.45,0);
+  \draw[gcol!50, thin] (0,-1.75) -- (0,1.75);
+  \draw[gcol!35, thin, dashed] (0,0) circle (1);
+  \draw[gcol, thin, rotate=10.90] (0,0) ellipse (2.2575 and 1.5504);
+  \draw[->, vcol, very thick] (0,0) -- (2.2168,0.4269);
+  \draw[->, ucol, very thick] (0,0) -- (-0.2932,1.5224);
+  \node[vcol, font=\small] at (2.42,0.58) {$\sigma_1 \uu1$};
+  \node[ucol, font=\small] at (-0.60,1.66) {$\sigma_2 \uu2$};
+  \node[gcol, font=\scriptsize] at (0,-2.02) {$\uu1$ at $10.90^\circ$};
+\end{scope}
+
+\end{tikzpicture}
+\caption{The unit circle and its image. The frame $\vv1, \vv2$ at $34.10^\circ$
+is the one whose images stay perpendicular; those images land on the ellipse's
+axes, with lengths $\sigma_1 = 2.2575$ and $\sigma_2 = 1.5504$. The input frame
+sits at $34.10^\circ$ and the output frame at $10.90^\circ$: a gap of
+$23.20^\circ$. The two panels are different copies of $\R^2$; the only link
+between them is the pairing $\vv i \mapsto \sigma_i \uu i$.}
+\label{fig:ellipse}
+\end{figure}
+
+That gap of $23.20^\circ$ between the frames is the rotation $UV\T$. Since
+$\det(UV\T) = +1$ it is a genuine rotation, not a reflection. For a generic
+matrix it is nonzero and bears no relation to anything else about $A$: knowing
+$V$ tells you nothing about $U$ without passing through $A$.
+
+\subsection{An aside: the shear}
+
+The virtue of an arbitrary matrix is that it has no structure to mislead. The
+vice is that nobody has any prior expectation about it, so the SVD's claim ---
+\emph{this is a rotation, a stretch, and a rotation} --- is unsurprising.
+
+For that, the shear is better:
+\[
+A = \begin{pmatrix} 1 & 1 \\ 0 & 1\end{pmatrix} .
+\]
+It slides every point rightward by an amount equal to its height. Sliding does
+not look like rotate--stretch--rotate. But
+\[
+A\T A = \begin{pmatrix} 1 & 1 \\ 1 & 2\end{pmatrix},
+\qquad \lambda = \frac{3\pm\sqrt5}{2},
+\qquad \sigma_1 = 1.6180, \quad \sigma_2 = 0.6180 ,
+\]
+the golden ratio and its reciprocal, with $\sigma_1\sigma_2 = 1 = \det A$. The
+frames sit at $\vv1$: $58.28^\circ$ and $\uu1$: $31.72^\circ$, differing by a
+rotation of $26.57^\circ$. So the shear \emph{is} a rotate--stretch--rotate,
+and the SVD is the change of viewpoint that reveals it.
+
+Why $58.28^\circ$? The shear pushes points rightward in proportion to height.
+A frame sitting in the first quadrant has both arms up high, so both get pushed
+right and they rotate toward each other: the angle closes, $f > 0$. A frame
+straddling the vertical has one arm high-right and one high-left; pushing both
+rightward separates them and the angle opens, $f < 0$. At $58.28^\circ$ the two
+effects balance. The right angle sits at the fulcrum and comes through intact.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+& $\sigma_1$ & $\sigma_2$ & $\vv1$ angle & $\uu1$ angle & gap $UV\T$ \\
+\midrule
+Generic $\left(\begin{smallmatrix}2&1\\-0.5&1.5\end{smallmatrix}\right)$
+  & $2.2575$ & $1.5504$ & $34.10^\circ$ & $10.90^\circ$ & $23.20^\circ$ \\
+Shear $\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$
+  & $1.6180$ & $0.6180$ & $58.28^\circ$ & $31.72^\circ$ & $26.57^\circ$ \\
+\bottomrule
+\end{tabular}
+\caption{Neither matrix has aligned frames; both rotate by roughly $25^\circ$
+between input and output. Alignment $U = V$ would require $A$ symmetric
+positive definite (\S\ref{sec:eigen}), and neither matrix is symmetric.}
+\end{table}
+
+\noindent
+One caution about the shear, which is why it is an aside rather than the main
+example. Its $\uu1 = (0.8507, 0.5257)$ is exactly $\vv1 = (0.5257, 0.8507)$
+with the coordinates swapped, and the two angles sum to $90^\circ$. That is an
+artifact: the shear is \emph{persymmetric} (symmetric about its anti-diagonal),
+which forces the relation. It is easy to mistake this tidiness for alignment,
+or for a general fact. It is neither. The generic matrix above has no such
+pattern, and it is the honest picture.
+
+\section{Can you choose the input frame?}
+\label{sec:choose}
+
+A natural question: given $A$, could you pick \emph{any} orthonormal basis $V$
+of the input space and find a matching orthonormal $U$ and some diagonal
+$\Sigma'$ with $A = U \Sigma' V\T$? Perhaps the freedom to choose $\Sigma'$
+buys enough slack.
+
+No. Requiring $AV = U\Sigma'$ says precisely that $A\vv1, \dots, A\vv n$ are
+mutually orthogonal --- and the $\sigma_i'$ are then \emph{forced} to be the
+norms $\|A\vv i\|$, not chosen. The freedom in $\Sigma'$ is illusory; the
+orthogonality of the images is the entire constraint, and it is the same
+constraint $f(\theta) = 0$ from \S\ref{sec:uniqueness-f}.
+
+In the plane this is exactly what Figure~\ref{fig:sweep} shows: of the
+continuum of frames, two crossings, describing one. In $\R^n$ the counting
+tells the same story. $V$ has $n(n-1)/2$ free parameters; requiring the $n$
+images to be pairwise orthogonal imposes one equation per pair, also $n(n-1)/2$.
+Constraints exactly consume parameters, so the solution set is generically
+discrete --- finitely many sign and permutation variants of one frame, not a
+continuum. Equivalently, $A\T A = V\Sigma'^2 V\T$ forces $V$ to be an
+eigenbasis of the symmetric matrix $A\T A$, and eigenbases are rigid.
+
+\paragraph{The exception.} The degenerate case of \S\ref{sec:uniqueness-f}
+reappears here: when $A\T A = \sigma^2 I$, every direction stretches equally,
+every orthonormal $V$ works, and $U = AV/\sigma$. The image of the sphere is a
+sphere, so no direction is distinguished. The SVD tells you nothing you did not
+already know, and is maximally non-unique.
+
+This is worth stating as a principle: \emph{the content of the SVD is
+anisotropy.} The decomposition earns its keep exactly when the singular values
+differ. The ratio $\sigma_1/\sigma_n$ is the eccentricity of the image
+ellipsoid, and also the condition number.
+
+\section{Uniqueness}
+\label{sec:uniqueness}
+
+The singular values are unique (with the descending convention
+$\sigma_1 \geq \dots \geq \sigma_r > 0$). The frames are not, and the
+freedoms are:
+
+\begin{enumerate}\itemsep0.3em
+\item \textbf{Sign/phase.} For a simple singular value, $\uu i \to -\uu i$ and
+$\vv i \to -\vv i$ together. The coupling is essential: you cannot flip one
+without the other, since $A = U\Sigma V\T$ must be preserved.
+\item \textbf{Repeated singular values.} If $\sigma_i$ has multiplicity $k$,
+the corresponding $k$-dimensional subspaces of $U$ and $V$ can be rotated by
+any $k \times k$ orthogonal $Q$ --- applied to \emph{both}.
+\item \textbf{Zero singular values.} The columns of $U$ spanning
+$\operatorname{coker}(A)$ and of $V$ spanning $\ker(A)$ are arbitrary
+orthonormal bases of those subspaces, independent of each other.
+\item \textbf{Ordering}, if the descending convention is dropped.
+\end{enumerate}
+
+\begin{claim}
+For $A$ of full rank with distinct singular values, the thin SVD is unique up
+to the signs in item 1.
+\end{claim}
+
+\subsection*{Parameter count}
+
+A general $n \times n$ matrix has $n^2$ free parameters. The SVD supplies
+\[
+\underbrace{\tfrac{n(n-1)}{2}}_{V} + \underbrace{n}_{\Sigma} + \underbrace{\tfrac{n(n-1)}{2}}_{U} \;=\; n^2 .
+\]
+It is a reparametrization, not a compression. The information is rearranged
+from ``what each column does'' into ``(input frame, stretches, output frame)'',
+and that arrangement is where the geometry lives.
+
+The $n(n-1)/2$ is the dimension of the orthogonal group $O(n)$. Two ways to see
+it. First, $V\T V = I$ is a symmetric matrix equation, imposing $n(n+1)/2$
+constraints on $n^2$ entries, leaving $n^2 - n(n+1)/2 = n(n-1)/2$. Second,
+build $V$ column by column: $\vv1$ is any unit vector ($n-1$ parameters),
+$\vv2$ any unit vector orthogonal to it ($n-2$), and so on, giving
+$(n-1) + (n-2) + \dots + 0 = n(n-1)/2$. For $n = 2$ this is $1$ --- a rotation
+is an angle. For $n = 3$ it is $3$ --- the Euler angles.
+
+\subsection*{$U$ and $V$ are independent}
+
+Pick any orthogonal $U$, any orthogonal $V$, any nonnegative diagonal $\Sigma$:
+then $A = U\Sigma V\T$ is a matrix with exactly that SVD. Nothing couples the
+two frames, and the parameter count above confirms there is room for both.
+
+Going \emph{backwards} from a given $A$, however, the frames are determined and
+generally unrelated --- you cannot infer one from the other without passing
+through $A$. This is precisely why the SVD carries more information than a
+single eigenbasis: two independent frames rather than one.
+
+\section{Relation to eigenvalues and eigenvectors}
+\label{sec:eigen}
+
+For a general square matrix, the two decompositions are largely unrelated.
+
+\[
+A = \begin{pmatrix} 0 & 1 \\ 0 & 0\end{pmatrix}:
+\quad \lambda = 0, 0 \quad\text{but}\quad \sigma = 1, 0 .
+\]
+\[
+A = \begin{pmatrix} 1 & t \\ 0 & 1\end{pmatrix}:
+\quad \lambda = 1, 1 \ \text{ for all } t, \quad\text{but}\quad \sigma_1 \to \infty \ \text{ as } t \to \infty .
+\]
+
+The structural difference: singular vectors are always orthonormal and always
+exist in full; eigenvectors need not be orthogonal, and a defective matrix does
+not have a complete set. Eigenvectors live in one space and map to themselves;
+singular vectors come in \emph{coupled pairs across two spaces}. That is the
+fundamental distinction --- eigendecomposition uses one basis, SVD pairs two.
+
+\paragraph{What does hold.}
+\begin{itemize}\itemsep0.3em
+\item $\prod |\lambda_i| = \prod \sigma_i = |\det A|$.
+\item $\sigma_{\min} \leq |\lambda_i| \leq \sigma_{\max}$ for every eigenvalue;
+in particular the spectral radius satisfies $\rho(A) \leq \sigma_{\max} = \|A\|_2$.
+\item Weyl: $\prod_{i=1}^k |\lambda_i| \leq \prod_{i=1}^k \sigma_i$ for each $k$,
+with equality at $k = n$.
+\item Yamamoto: $\lim_{k\to\infty} \sigma_i(A^k)^{1/k} = |\lambda_i|$.
+\end{itemize}
+
+\paragraph{When they coincide.}
+\begin{itemize}\itemsep0.3em
+\item \textbf{Normal} $A$ (i.e.\ $A\T A = AA\T$): $\sigma_i = |\lambda_i|$, and
+the eigenbasis is orthonormal, so $\vv i$ are the eigenvectors and
+$\uu i = \pm \vv i$.
+\item \textbf{Symmetric positive semidefinite}: $\sigma_i = \lambda_i$ and
+$U = V$. The two decompositions are literally identical.
+\item \textbf{Symmetric indefinite}: $\sigma_i = |\lambda_i|$, and $U$ and $V$
+differ by sign flips on the negative eigendirections.
+\end{itemize}
+
+\noindent
+So $U = V$ characterizes symmetric positive semidefinite matrices. Neither
+example in this note is symmetric, which is why neither has aligned frames.
+
+A caveat on the normal case: eigenvalues $\pm 3$ in a symmetric matrix give a
+\emph{repeated} singular value $\sigma = 3$, so the SVD acquires rotation
+freedom in that subspace that the eigendecomposition does not have. The
+eigendecomposition can be strictly more rigid.
+
+\section{Polar decomposition}
+\label{sec:polar}
+
+For invertible square $A$, the SVD says
+\[
+GL(n) \;=\; O(n) \cdot (\text{positive diagonal}) \cdot O(n),
+\]
+which regrouped gives the polar decomposition $A = QP$ with
+$Q = UV\T$ orthogonal and $P = V\Sigma V\T$ positive definite. The same content
+in different clothes: $P$ is the pure stretch, $Q$ the pure rotation. For the
+running example $Q$ is the rotation by $23.20^\circ$ --- the frame gap visible
+in Figure~\ref{fig:ellipse} --- and for the shear it is $26.57^\circ$.
+
+\section{Summary}
+
+\begin{quote}
+$A$ is completely described by which orthonormal input frame goes to which
+orthonormal output frame, and by how much each direction stretches. The SVD's
+claim is that such frames always exist.
+\end{quote}
+
+\noindent
+Linearity means any basis determines $A$ --- that is not what makes the SVD
+special. What makes the $V$-basis special is that in it the action is
+\emph{diagonal}: feed in $\vv3$, get out pure $\uu3$, scaled. Feed in any other
+basis and the images tangle together in a way that hides the geometry. Same
+information, worse presentation.
+
+\bigskip
+\hrule
+\bigskip
+
+\noindent
+\footnotesize
+All numerical values in this document were computed with NumPy's
+\texttt{linalg.svd} and verified against the defining properties
+($\ip{A\vv1}{A\vv2} = 0$, $\prod\sigma_i = |\det A|$, $\det(UV\T) = +1$).
+
+\end{document}

@@ -86,11 +86,12 @@ Each exploration typically includes:
 
 ## License
 
-This work is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International License](http://creativecommons.org/licenses/by-nc/4.0/) - see the [LICENSE](LICENSE) file for details.
+This work is licensed under the [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License](http://creativecommons.org/licenses/by-nc-nd/4.0/) - see the [LICENSE](LICENSE) file for details.
 
 **What this means:**
-- ✅ You can use, modify, and share this work for educational, research, and personal projects
+- ✅ You can share unmodified copies of this work for non-commercial purposes
 - ✅ You must provide appropriate attribution to the original author
+- ❌ You may not modify, adapt, or create derivative works from this material
 - ❌ Commercial use is not permitted without explicit permission
 - 📚 Perfect for academic research, learning, and non-commercial exploration
 
