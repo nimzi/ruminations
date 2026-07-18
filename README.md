@@ -51,6 +51,18 @@ An article on the Moore–Penrose pseudoinverse: its foundations, derivations, a
 
 **Key concepts**: Linear algebra, matrix inverses, least-squares solutions, singular value decomposition, rank deficiency
 
+### The Singular Value Decomposition, Rediscovered
+**Files**: `svd-derivation/svd.tex`, `svd-derivation/svd.pdf`
+
+An article rebuilding the SVD from a geometric question rather than the usual spectral-theorem shortcut. Instead of asserting $A = U\Sigma V^\top$ and justifying it algebraically, the note starts by asking which right angles a linear map preserves, and shows this question pins down the decomposition on its own. Covers:
+
+- Which orthogonal frames a linear map sends to orthogonal frames, worked out first in the plane
+- The equivalence between the preserved right angle and the direction of maximal stretch
+- Extension of the argument from $\mathbb{R}^2$ to general linear maps
+- The resulting $A = U\Sigma V^\top$ factorization, arrived at as a consequence rather than a starting assumption
+
+**Key concepts**: Linear algebra, singular value decomposition, orthogonal frames, spectral theorem, geometric intuition
+
 ## Future Directions
 
 - Extension to other Platonic solids
