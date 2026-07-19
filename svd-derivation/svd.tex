@@ -51,7 +51,7 @@
 \newtheorem*{claim}{Claim}
 
 \title{\bfseries Singular Value Decomposition\\[0.3em]
-\large Rediscovered from a question about right angles}
+\large Rediscovered by asking where an ellipse\'s axes come from}
 \author{Paul Agron}
 \date{\today}
 
@@ -67,23 +67,27 @@ is correct, and it explains nothing: the geometry arrives already compressed
 into an algebraic identity, and the reader is asked to accept a powerful theorem
 at the outset in order to reach a result that is, in the end, about ellipses.
 
-This note reverses the order. It starts with a question one can ask about any
-linear map --- \emph{which right angles does it preserve?} --- and answers it
-first in the plane, where the whole situation is visible: a perpendicular frame
-is rotated, its images skew, the skew reverses sign, and somewhere in between
-the right angle survives. That crossing turns out to be the same point at which
-the map stretches hardest, an equivalence one can watch happen and then prove
-both ways.
+This note reverses the order, following the path one might actually take to
+discover the decomposition. It begins with an observation anyone can make: a
+linear map sends the unit circle to an ellipse. An ellipse has axes, so one
+asks what those axes came from --- and finds, across example after example, that
+the input directions mapping to them are perpendicular. Why should that be? In
+the plane the question can be answered by watching: rotate a perpendicular frame,
+track how badly its images miss being perpendicular, and a sign change forces a
+configuration where they do not miss at all. That surviving frame turns out to
+be where the map stretches hardest, an equivalence one can both see and prove.
 
-Only one half of that equivalence survives the trip to $\R^n$, and it is the
-half that matters: at a maximizer, the image cannot tilt. Iterating this yields
-the full frame in any dimension, with the singular values falling out in
-descending order because each step maximizes over what the last one left. The
-construction then turns out to have proved something it was not aiming at ---
-its output is an orthonormal eigenbasis of $A\T A$, which is to say the spectral
+Experiments in three dimensions show the same phenomenon --- the ellipsoid's
+axes again pull back to a perpendicular frame --- but the planar proof does not
+survive the trip, since a frame in $\R^n$ is no longer fixed by a single angle.
+The experiments suggest the repair: the axes come in order, longest first, and
+maximizing the stretch picks out the longest. Iterating that --- take the most
+stretched direction, then recurse on what is left --- builds the whole frame in
+any dimension, singular values emerging in descending order for free. The
+construction then turns out to have proved something it was not aiming at: its
+output is an orthonormal eigenbasis of $A\T A$, which is to say the spectral
 theorem, obtained rather than assumed. The classical statement appears at the
-end as a name for what the geometry already built, not as a hypothesis at the
-start.
+end as a name for what the geometry already built.
 
 The decomposition's existence, uniqueness, parameter count, degenerate cases,
 and relation to the eigendecomposition all follow from the same source. Worked
@@ -91,51 +95,138 @@ examples are small enough to verify by hand; every numerical and symbolic claim
 has been checked.
 \end{abstract}
 
-\section{The question}
+\section{Circles become ellipses}
+\label{sec:observe}
 
 Fix a matrix $A \in \R^{m \times n}$ and think of it as a map $\R^n \to \R^m$.
-Linear maps do not, in general, preserve angles. Take
+Feed it the unit circle --- all input vectors of length one --- and look at where
+they land. Take
 \begin{equation}A = \begin{pmatrix} 2 & 1 \\ -0.5 & 1.5 \end{pmatrix},
 \end{equation}
-which will serve as the running example. The standard basis vectors $e_1, e_2$
-start out perpendicular; their images $Ae_1 = (2, -0.5)$ and $Ae_2 = (1, 1.5)$
-have inner product $1.25$ and sit $70.35^\circ$ apart. The right angle is
-destroyed.
+which will serve as the running example. Applying $A$ to the unit circle produces
+the closed curve on the right of Figure~\ref{fig:ellipse}: an \emph{ellipse}. Try
+other matrices and the same thing happens --- the circle is stretched and turned,
+but it always comes out an ellipse, never a peanut or a teardrop. (For a
+degenerate matrix the ellipse can flatten to a segment, and in higher dimensions
+the sphere becomes an ellipsoid; \S\ref{sec:ellipsoid} makes this precise. For
+now the picture is all we need.)
 
-Try a different perpendicular pair and you get a different amount of damage ---
-sometimes more, sometimes less. This suggests a question:
+An ellipse has two distinguished directions: its \emph{axes}, the long one and
+the short one, perpendicular to each other. They are features of the output. It
+is natural to ask what they came \emph{from} --- what input directions $A$ sent
+to them.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[scale=1.4, >={Stealth[length=2mm]}]
+\begin{scope}
+  \draw[gcol!50, thin] (-1.35,0) -- (1.35,0);
+  \draw[gcol!50, thin] (0,-1.35) -- (0,1.35);
+  \draw[gcol, thin] (0,0) circle (1);
+  \draw[->, vcol, very thick] (0,0) -- (0.8281,0.5606);
+  \draw[->, ucol, very thick] (0,0) -- (-0.5606,0.8281);
+  \node[vcol, font=\small] at (1.10,0.70) {$\vv1$};
+  \node[ucol, font=\small] at (-0.78,1.02) {$\vv2$};
+  \node[gcol, font=\scriptsize] at (0,-1.62) {unit circle};
+  \node[gcol, font=\scriptsize] at (0,-1.92) {preimages of the axes};
+\end{scope}
+\node at (2.15,0) {$\xmapsto{\;\;A\;\;}$};
+\begin{scope}[xshift=4.6cm]
+  \draw[gcol!50, thin] (-2.45,0) -- (2.45,0);
+  \draw[gcol!50, thin] (0,-1.75) -- (0,1.75);
+  \draw[gcol!35, thin, dashed] (0,0) circle (1);
+  \draw[gcol, thin, rotate=10.90] (0,0) ellipse (2.2575 and 1.5504);
+  \draw[->, vcol, very thick] (0,0) -- (2.2168,0.4269);
+  \draw[->, ucol, very thick] (0,0) -- (-0.2932,1.5224);
+  \node[vcol, font=\small] at (2.44,0.60) {$\sigma_1 \uu1$};
+  \node[ucol, font=\small] at (-0.62,1.68) {$\sigma_2 \uu2$};
+  \node[gcol, font=\scriptsize] at (0,-2.02) {image ellipse};
+  \node[gcol, font=\scriptsize] at (0,-2.32) {axes (long, short)};
+\end{scope}
+\end{tikzpicture}
+\caption{The unit circle maps to an ellipse under
+$A = \left(\protect\begin{smallmatrix}2&1\\-0.5&1.5\protect\end{smallmatrix}\right)$.
+The ellipse's axes point along $\uu1$ (long, length $\sigma_1$) and $\uu2$
+(short, length $\sigma_2$). Their preimages $\vv1, \vv2$ --- the input directions
+$A$ sent to the axes --- are marked on the circle. The question of
+\S\ref{sec:evidence} is whether those preimages are perpendicular.}
+\label{fig:ellipse}
+\end{figure}
 
 \begin{quote}
 \itshape
-Is there a perpendicular pair whose images are still perpendicular?
+Are the preimages of the ellipse's axes special?
 \end{quote}
 
-The answer is yes, for every matrix without exception, and the pair is
-essentially unique. Finding it \emph{is} the singular value decomposition.
+This is the question the first half of the article answers. Nothing about the
+setup suggests the preimages should be nice: $A$ mangles most directions, tilting
+and skewing as it goes. But the axes are where the image is longest and shortest,
+so their preimages are at least distinguished by \emph{something}, and it is worth
+looking.
 
-The route there runs through three stages, each earning the next.
-\S\S\ref{sec:planar}--\ref{sec:uniqueness-f} settle the plane, where the answer
-can be watched rather than computed. \S\ref{sec:variational} extracts from that
-picture the one statement that survives into $\R^n$, and iterates it into a
-construction valid in any dimension. \S\ref{sec:algebraic} observes that the
-construction has already proved the spectral theorem, and only then states it
---- as a name for what has been built, rather than as an assumption. Everything
-afterwards follows from the frame: what it is called (\S\ref{sec:naming}), what
-it looks like (\S\ref{sec:ellipsoid}), and what can be deduced from having found
-it (\S\S\ref{sec:choose}--\ref{sec:polar}).
+\subsection{What the examples show}
+\label{sec:evidence}
 
-\section{Why such a pair must exist}
+Compute the axis-preimages for a few matrices and a pattern appears at once.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+$A$ & axes at & preimages at & axes $\perp$? & preimages $\perp$? \\
+\midrule
+$\left(\begin{smallmatrix}2&1\\-0.5&1.5\end{smallmatrix}\right)$
+  & $10.9^\circ,\,100.9^\circ$ & $34.1^\circ,\,124.1^\circ$ & yes & yes \\
+$\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$
+  & $31.7^\circ,\,121.7^\circ$ & $58.3^\circ,\,148.3^\circ$ & yes & yes \\
+$\left(\begin{smallmatrix}1&2\\2&1\end{smallmatrix}\right)$
+  & $45^\circ,\,{-45}^\circ$ & $45^\circ,\,135^\circ$ & yes & yes \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The axes are perpendicular --- of course they are, they are the axes of an
+ellipse. The striking column is the last one: \emph{their preimages are
+perpendicular too.} The two input directions that $A$ sends to the ellipse's axes
+form a right angle, and $A$ carries that right angle to another right angle (the
+axes). Every example does this. So the answer to the question looks like
+\emph{yes} --- but examples are not a proof, and it is not yet clear why it should
+be true or whether the perpendicular preimage pair is unique. The next sections
+settle both, first in the plane, then in general.
+
+Because this pair is what we are hunting, give its members names now. Write
+$\vv1, \vv2$ for the preimages of the long and short axes, and $\sigma_1 \geq
+\sigma_2$ for the axis half-lengths, so that
+\begin{equation}A\vv1 = \sigma_1 \uu1, \qquad A\vv2 = \sigma_2 \uu2,
+\end{equation}
+where $\uu1, \uu2$ are the unit vectors along the axes. These are the
+\emph{singular values} ($\sigma_i$), \emph{right singular vectors} ($\vv i$), and
+\emph{left singular vectors} ($\uu i$) of $A$, and assembling the two relations
+into matrix form gives $A = U\Sigma V\T$ --- the singular value decomposition.
+\S\ref{sec:naming} returns to the names; the task between here and there is to
+prove the frame exists.
+
+\section{Why the perpendicular pair must exist}
 \label{sec:existence}
 
-Take an orthonormal frame $\vv1(\theta), \vv2(\theta)$ and rotate it rigidly as
-$\theta$ varies. Define
+The examples of \S\ref{sec:evidence} suggest that among all perpendicular input
+pairs, there is one whose images stay perpendicular --- and that this one lands
+on the ellipse's axes. To prove it, forget the ellipse for a moment and hunt
+directly for such a pair. Take a perpendicular frame $\vv1(\theta), \vv2(\theta)$
+and rotate it rigidly as $\theta$ varies, watching what $A$ does to the right
+angle between the arms. Measure the failure with
 \begin{equation}f(\theta) \;=\; \ip{A\vv1(\theta)}{A\vv2(\theta)},
 \end{equation}
-the inner product of the two \emph{images}. This is the quantity we want to
-vanish (Figure~\ref{fig:sweep}): $f > 0$ means the images have closed to an acute angle, $f < 0$ means
-they have opened past a right angle, and $f = 0$ means the right angle
-survived. Note that $f$ measures the \emph{damage}, not the angle itself; the
-input frame stays perpendicular throughout, by construction.
+the inner product of the two \emph{images}. The inner product is the natural
+gauge of ``how far from perpendicular'': it is zero exactly when the images are
+perpendicular, positive when the angle between them has closed below a right
+angle, negative when it has opened past one (Figure~\ref{fig:sweep}). So $f$
+measures the \emph{damage} $A$ does to the right angle; the input arms stay
+perpendicular throughout, by construction, and we are asking whether any $\theta$
+makes the damage vanish. If one does, that frame's images are perpendicular ---
+and, being the images of a perpendicular pair under $A$, they are exactly the
+kind of pair the axes are.
 
 \subsection{The sign flips every quarter turn}
 \label{sec:planar}
@@ -254,19 +345,61 @@ describe the same pair of lines.}
 \label{fig:sweep}
 \end{figure}
 
+\subsection{The same thing happens in three dimensions}
+\label{sec:threed}
+
+The plane is settled: a perpendicular pair whose images are perpendicular exists,
+is essentially unique, and lands on the ellipse's axes. Before generalizing,
+it is worth checking whether the phenomenon even persists --- so run the
+experiment one dimension up. In $\R^3$ the unit sphere maps to an ellipsoid,
+which has \emph{three} axes, mutually perpendicular. Do their preimages form an
+orthonormal triple, as the two axis-preimages did in the plane?
+
+Take
+\begin{equation}A = \begin{pmatrix} 1 & 2 & 0 \\ 0 & 1 & 1 \\ 1 & 0 & 1 \end{pmatrix},
+\end{equation}
+compute the ellipsoid's axes and pull them back. The semi-axis lengths come out
+$\sigma_1 = 2.532$, $\sigma_2 = 1.347$, $\sigma_3 = 0.879$, and the three
+preimages $\vv1, \vv2, \vv3$ satisfy
+\begin{equation}\ip{\vv i}{\vv j} = 0 \quad (i \neq j), \qquad \|\vv i\| = 1 :
+\end{equation}
+a perfect orthonormal triple, angles $90.00^\circ$ to the numerical precision
+checked. Repeating with other $3\times 3$ matrices --- symmetric, asymmetric,
+random --- gives the same verdict every time (Figure~\ref{fig:threed}). The
+ellipsoid's axes always pull back to a perpendicular frame, and $A$ carries that
+frame to the axes: $A\vv i = \sigma_i \uu i$, just as in the plane.
+
+\begin{figure}[htbp]
+\centering
+\input{threed}
+\caption{\textbf{The three-dimensional experiment.} The unit sphere (left) maps
+under $A = \left(\protect\begin{smallmatrix} 1 & 2 & 0 \\ 0 & 1 & 1 \\ 1 & 0 & 1\protect\end{smallmatrix}\right)$
+to an ellipsoid (right). The ellipsoid's three axes $\sigma_i\uu i$ are mutually
+perpendicular; their preimages $\vv i$ --- the input directions $A$ sends to
+those axes --- form an orthonormal triple. The phenomenon of \S\ref{sec:evidence}
+survives intact into three dimensions.}
+\label{fig:threed}
+\end{figure}
+
+So the pattern is real and dimension-independent, but the \emph{proof} was not.
+The rotating-frame argument was thoroughly planar: it swept a single angle and
+watched a scalar change sign. In $\R^3$ a frame is not fixed by one angle, and
+in $\R^n$ an orthonormal frame has $n(n-1)/2$ parameters while its images must
+satisfy $n(n-1)/2$ orthogonality conditions --- a coupled system, not a single
+equation, and the intermediate value theorem has nothing to say about it. Fixing
+up one pair disturbs another. A new idea is needed to carry the planar success
+upward, and the experiments hint at where to find it: the axes came in
+\emph{order}, a longest and a shortest, and the longest is where the image
+stretches most. Perhaps maximizing the stretch is the handle.
+
 \subsection{From two dimensions to \texorpdfstring{$n$}{n}}
 \label{sec:variational}
 
-The rotating frame is a planar device. In $\R^n$ there is no single angle to
-turn: an orthonormal frame has $n(n-1)/2$ parameters, the images must satisfy
-$n(n-1)/2$ orthogonality conditions, and the intermediate value theorem --- one
-equation, one unknown --- has nothing to say about a coupled system that size.
-Fixing up one pair disturbs another.
-
-This section builds the bridge. The plan is to establish, \emph{in the plane
-where both sides can be seen}, that the surviving frame and the direction of
-maximum stretch are the same object; then to notice that one half of that
-equivalence never used the dimension; then to recurse on it.
+The plan is to establish, \emph{in the plane where both sides can be seen}, that
+the surviving frame and the direction of maximum stretch are the same object;
+then to notice that one half of that equivalence never used the dimension; then
+to recurse on it, peeling off the longest axis at each step as the experiments
+suggest.
 
 \paragraph{A false start, worth naming.} It is tempting to hope that
 orthogonality in the domain forces orthogonality in the image, or the reverse.
@@ -765,12 +898,32 @@ factor out the lengths:
 \end{equation}
 The $\sigma_i$ are the \textbf{singular values} and the $\uu i$ are the
 \textbf{left singular vectors}. Collecting these $n$ equations into matrix form
-gives $AV = U\Sigma$, i.e.
+gives $AV = U\Sigma$, i.e.\ $A = U\Sigma V\T$. The construction of
+\S\S\ref{sec:existence}--\ref{sec:algebraic} has, without announcing it, proved
+exactly this --- so it is worth stating plainly, as the theorem the whole first
+half was after.
+
+\begin{quote}
+\textbf{Singular value decomposition.} \itshape Every real $m \times n$ matrix
+$A$ factors as
+\[
+A = U\Sigma V\T,
+\]
+with $U \in \R^{m\times m}$ and $V \in \R^{n\times n}$ orthogonal, and
+$\Sigma \in \R^{m\times n}$ ``diagonal'' --- $\Sigma_{ii} = \sigma_i \geq 0$ and
+all other entries zero. The columns of $V$ are the right singular vectors, the
+columns of $U$ the left singular vectors, and the $\sigma_i$ the singular
+values. Taking $\sigma_1 \geq \sigma_2 \geq \dots \geq 0$, the singular values
+are uniquely determined by $A$; the vectors $U, V$ are determined up to the
+freedoms catalogued in \S\ref{sec:uniqueness}.
+\end{quote}
+
+\noindent
+The boxed relation is the same statement seen through its columns:
 \begin{equation}\boxed{\; A = U \Sigma V\T \;}
 \end{equation}
-with $U, V$ orthogonal and $\Sigma$ diagonal. The names \emph{left} and
-\emph{right} are positional --- $U$ sits on the left of the product, $V$ on the
-right --- and carry no deeper meaning.
+The names \emph{left} and \emph{right} are positional --- $U$ sits on the left
+of the product, $V$ on the right --- and carry no deeper meaning.
 
 Note the asymmetry in how the two frames arise. \emph{$V$ is chosen; $U$ is a
 consequence.} We select the input frame by a property it has (its images are
@@ -919,7 +1072,7 @@ axes, with lengths $\sigma_1 = 2.2575$ and $\sigma_2 = 1.5504$. The input frame
 sits at $34.10^\circ$ and the output frame at $10.90^\circ$: a gap of
 $23.20^\circ$. The two panels are different copies of $\R^2$; the only link
 between them is the pairing $\vv i \mapsto \sigma_i \uu i$.}
-\label{fig:ellipse}
+\label{fig:ellipse-detail}
 \end{figure}
 
 That gap of $23.20^\circ$ between the frames is the rotation $UV\T$. Since
@@ -1118,14 +1271,37 @@ eigendecomposition can be strictly more rigid.
 \section{Polar decomposition}
 \label{sec:polar}
 
-For invertible square $A$, the SVD says
-\begin{equation}GL(n) \;=\; O(n) \cdot (\text{positive diagonal}) \cdot O(n),
+The gap between the input frame $V$ and the output frame $U$ has come up more
+than once. Figure~\ref{fig:ellipse-detail} showed it as a concrete angle --- the
+$23.20^\circ$ by which the running example's frames differ --- and
+\S\ref{sec:choose} made the general point that $U$ and $V$ are independent, so
+this gap is real information, not an artifact. It is worth isolating that gap as
+a single object, and the SVD does it with one regrouping.
+
+Start from $A = U\Sigma V\T$ and insert $V\T V = I$ between two copies of the
+frames:
+\begin{equation}
+A = U\Sigma V\T = U\,(V\T V)\,\Sigma V\T = (U V\T)(V\Sigma V\T) .
 \end{equation}
-which regrouped gives the polar decomposition $A = QP$ with
-$Q = UV\T$ orthogonal and $P = V\Sigma V\T$ positive definite. The same content
-in different clothes: $P$ is the pure stretch, $Q$ the pure rotation. For the
-running example $Q$ is the rotation by $23.20^\circ$ --- the frame gap visible
-in Figure~\ref{fig:ellipse} --- and for the shear it is $26.57^\circ$.
+Name the two factors $Q = UV\T$ and $P = V\Sigma V\T$. Then
+\begin{equation}
+A = QP,
+\end{equation}
+the \textbf{polar decomposition}. Each factor is exactly what its construction
+makes it: $Q = UV\T$ is orthogonal (a product of orthogonal matrices), and it is
+precisely the rotation that carries $V$'s frame onto $U$'s --- the gap itself,
+named. $P = V\Sigma V\T$ is symmetric positive semidefinite, a pure stretch
+along $V$'s axes by the factors $\sigma_i$, with no rotation left in it.
+
+So every matrix is a stretch followed by a rotation: $P$ deforms the input along
+the right singular directions, and $Q$ then swings the result over to the output
+frame. It is the same content as the SVD --- $Q$ and $P$ are built from
+$U, \Sigma, V$ --- repackaged to put the rotation in one box and the stretch in
+another. For the running example $Q$ is the rotation by $23.20^\circ$ seen in
+Figure~\ref{fig:ellipse-detail}; for the shear it is $26.57^\circ$. The analogy
+with a complex number $z = re^{i\theta}$ --- modulus $r \geq 0$ times a unit
+phase --- is exact and gives the decomposition its name: $P$ is the modulus,
+$Q$ the phase.
 
 \section{Summary}
 
