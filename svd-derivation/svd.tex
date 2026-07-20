@@ -52,7 +52,7 @@
 \newtheorem*{claim}{Claim}
 
 \title{\bfseries Singular Value Decomposition\\[0.3em]
-\large Rediscovered by asking where an ellipse\'s axes come from}
+\large\mdseries A geometric rediscovery --- where proofs become algorithms}
 \author{Paul Agron}
 \date{\today}
 
@@ -62,38 +62,43 @@
 
 \begin{abstract}
 \noindent
-The singular value decomposition is usually introduced as a factorization
-$A = U\Sigma V\T$, justified by applying the spectral theorem to $A\T A$. That
-is correct, and it explains nothing: the geometry arrives already compressed
-into an algebraic identity, and the reader is asked to accept a powerful theorem
-at the outset in order to reach a result that is, in the end, about ellipses.
+This article has a hidden agenda. On its surface it is a leisurely geometric
+rediscovery of the singular value decomposition --- but its real claim is that
+the pretty piece of mathematics it builds turns out to be the machinery quietly
+running a great deal of your machine learning. The same construction that
+answers an idle question about ellipses is the algorithm behind principal
+component analysis, kernel methods, and PageRank; and it is not merely the
+\emph{results} that transfer, but the \emph{proofs} themselves, run as
+procedures.
 
-This note reverses the order, following the path one might actually take to
-discover the decomposition. It begins with an observation anyone can make: a
-linear map sends the unit circle to an ellipse. An ellipse has axes, so one
-asks what those axes came from --- and finds, across example after example, that
-the input directions mapping to them are perpendicular. Why should that be? In
-the plane the question can be answered by watching: rotate a perpendicular frame,
-track how badly its images miss being perpendicular, and a sign change forces a
-configuration where they do not miss at all. That surviving frame turns out to
-be where the map stretches hardest, an equivalence one can both see and prove.
+The usual introduction to the SVD states the factorization $A = U\Sigma V\T$ and
+justifies it by applying the spectral theorem to $A\T A$ --- correct, and
+unilluminating: the geometry arrives already compressed into an algebraic
+identity, and a powerful theorem is assumed at the outset to reach a result that
+is, in the end, about ellipses. Part~I reverses the order, following the path one
+might actually take to discover the decomposition. A linear map sends the unit
+circle to an ellipse; an ellipse has axes; one asks what input directions map to
+them, and finds --- across example after example --- that they are perpendicular.
+In the plane this can be \emph{watched}: rotate a frame, track how badly its
+images miss being perpendicular, and a sign change forces a configuration where
+they do not miss at all. That surviving frame is where the map stretches hardest.
+The equivalence generalizes by maximizing the stretch and recursing, singular
+values falling out in order --- and the construction turns out to have proved the
+spectral theorem rather than assuming it. The classical statement arrives at the
+end, as a name for what the geometry already built.
 
-Experiments in three dimensions show the same phenomenon --- the ellipsoid's
-axes again pull back to a perpendicular frame --- but the planar proof does not
-survive the trip, since a frame in $\R^n$ is no longer fixed by a single angle.
-The experiments suggest the repair: the axes come in order, longest first, and
-maximizing the stretch picks out the longest. Iterating that --- take the most
-stretched direction, then recurse on what is left --- builds the whole frame in
-any dimension, singular values emerging in descending order for free. The
-construction then turns out to have proved something it was not aiming at: its
-output is an orthonormal eigenbasis of $A\T A$, which is to say the spectral
-theorem, obtained rather than assumed. The classical statement appears at the
-end as a name for what the geometry already built.
+Part~II collects the debt. Each of the constructions from Part~I reappears as a
+working tool: the maximize-and-recurse proof becomes the power method and
+PageRank; the lemma locating the maximizer becomes the stopping rule of gradient
+descent; the duality between $A\T A$ and $AA\T$ becomes the transport at the
+heart of kernel PCA. Every connection is stated with its boundary --- what the
+decomposition supplies and where some other idea takes over --- because
+``the SVD is everywhere'' is less useful than knowing exactly which part of a
+method it is responsible for.
 
-The decomposition's existence, uniqueness, parameter count, degenerate cases,
-and relation to the eigendecomposition all follow from the same source. Worked
-examples are small enough to verify by hand; every numerical and symbolic claim
-has been checked.
+The prerequisites are the standard sophomore sequence; worked examples are small
+enough to verify by hand, and every numerical and symbolic claim has been
+checked.
 \end{abstract}
 
 \section*{Orientation}
@@ -135,6 +140,8 @@ underneath principal component analysis, low-rank approximation, latent-factor
 models, and much of the linear structure in modern machine learning. If you are
 heading toward those tools, the picture built here is what they stand on;
 \S\ref{sec:pca} makes the first of those connections explicit.
+
+\part{Discovering the decomposition}
 
 \section{Circles become ellipses}
 \label{sec:observe}
@@ -1464,6 +1471,25 @@ with a complex number $z = re^{i\theta}$ --- modulus $r \geq 0$ times a unit
 phase --- is exact and gives the decomposition its name: $P$ is the modulus,
 $Q$ the phase.
 
+\part{Where the decomposition goes}
+
+\noindent
+Part I built the singular value decomposition from the ground up and stopped at
+the moment it was proved to exist. This part spends it. The SVD --- or its
+symmetric shadow, the eigendecomposition --- sits underneath a surprising share
+of modern data analysis and machine learning, and the sections below trace five
+of those connections. Each states plainly what the decomposition \emph{does}
+supply and, just as plainly, where its contribution stops and some other idea
+takes over; the honesty is part of the point, because ``the SVD is everywhere''
+is less useful than knowing exactly which part of a method it is responsible for.
+
+One thing is worth watching for as they go by. In several of these connections it
+is not the \emph{result} of a Part~I proof that reappears but the proof
+\emph{itself} --- the argument, run as a procedure. The construction that found
+the frame becomes an algorithm that computes it; the lemma that characterized the
+maximizer becomes the rule that tells an optimizer when to stop. Where that
+happens it is flagged, and left to speak for itself.
+
 \section{Where this leads: principal component analysis}
 \label{sec:pca}
 
@@ -1500,11 +1526,176 @@ article set out to solve, \emph{is} finding the principal components. PCA is not
 an application of the SVD so much as the same picture wearing the clothes of
 statistics.
 
-This is one doorway of several. The same decomposition underlies low-rank
-approximation (keep the largest few $\sigma_i$, discard the rest --- the optimal
-compression of $A$), latent-factor models in recommendation and language, and a
-great deal of the linear structure inside modern machine learning. Each is a
-further story; the geometry built here is the ground they all stand on.
+\section{Kernel methods: the two Gram matrices}
+\label{sec:kernel}
+
+\S\ref{sec:duality} noticed that a matrix $A$ carries two symmetric
+companions: $A\T A$, living in the input space, and $AA\T$, living in the output
+space, sharing their nonzero eigenvalues $\sigma_i^2$. That duality is not a
+curiosity --- it is the engine of the \emph{kernel trick}, the idea that lets a
+method reach into a vast feature space while computing only in a small one.
+
+Suppose each data point $\mathbf{x}$ is lifted into a high-dimensional feature
+vector $\phi(\mathbf{x})$, and stack these as the rows of a matrix $\Phi$: $n$
+points (rows), $d$ features (columns), with $d$ possibly enormous. Principal
+component analysis in feature space wants the eigenvectors of the $d \times d$
+matrix $\Phi\T\Phi$ --- unusable if $d$ is a million, or infinite. But the
+duality says the eigenvalues are shared with the $n \times n$ matrix
+\begin{equation}K = \Phi\Phi\T, \qquad K_{ij} = \ip{\phi(\mathbf{x}_i)}{\phi(\mathbf{x}_j)},
+\end{equation}
+whose entries are just the pairwise inner products of the lifted points, and
+whose eigenvectors map to the feature-space ones through $\Phi$. So one
+diagonalizes the $n \times n$ matrix instead of the $d \times d$ one --- kernel
+PCA --- and never touches the giant feature space directly. When there are fewer
+samples than features, this is the difference between possible and impossible.
+
+Notice what kernel PCA is really doing: it is running the \emph{proof} of the
+duality, not merely quoting its conclusion. \S\ref{sec:duality} did not just
+observe that $\Phi\T\Phi$ and $\Phi\Phi\T$ share a spectrum --- it exhibited the
+map between their eigenframes, carrying an eigenvector of one to an eigenvector
+of the other by applying $\Phi$ (there, $A$) and rescaling. Kernel PCA executes
+exactly that transport: it finds the eigenvectors of the small $K$ and pushes
+them through $\Phi$ to recover the feature-space principal components it could
+never have computed directly. The argument that proved the two matrices are two
+ends of one map is, step for step, the algorithm.
+
+\paragraph{Where the SVD's contribution stops.} The duality explains why working
+with the small matrix $K$ \emph{suffices} --- same spectrum, recoverable
+eigenvectors. It does \emph{not} explain the other half of the trick: that the
+inner product $\ip{\phi(\mathbf{x}_i)}{\phi(\mathbf{x}_j)}$ can often be computed
+by a cheap formula $k(\mathbf{x}_i, \mathbf{x}_j)$ without ever forming
+$\phi$ --- the Gaussian kernel evaluates an inner product in an
+infinite-dimensional space in one line. That the cheap formula corresponds to a
+genuine feature space is a separate theorem (Mercer's, on positive-definite
+kernels), and it belongs to analysis, not to the linear algebra of Part~I. The
+SVD supplies the dimension-dodge; Mercer supplies the cheap evaluation. Both are
+needed, and they are different ideas.
+
+\section{Gradient descent and the power method}
+\label{sec:gradient}
+
+Part~I found the top singular direction by \emph{maximizing} $\|A\mathbf{v}\|$
+over the unit sphere, and derived the optimality condition
+$A\T A\, \vv1 = \sigma_1^2 \vv1$. Read that condition again with an optimizer's
+eye. The gradient of $\tfrac12\|A\mathbf{v}\|^2$ is $A\T A\, \mathbf{v}$, and the
+eigenvector equation says exactly that this gradient points \emph{along}
+$\mathbf{v}$ --- it has no component tangent to the sphere. There is nowhere left
+to climb. \emph{The eigenvector equation is the stopping condition of gradient
+ascent}, and Part~I's construction was, without saying so, a description of where
+an optimizer comes to rest.
+
+And it is the same \emph{proof}, not just the same statement. The heart of
+Part~I's variational step was the lemma that at the maximizer,
+$\ip{A\vv1}{A\mathbf{w}} = 0$ for every $\mathbf{w} \perp \vv1$ --- the images of
+all competing directions are orthogonal to $A\vv1$. That is precisely the
+assertion that the gradient $A\T A\,\vv1$ has no component along any tangent
+direction $\mathbf{w}$: the lemma's ``no direction improves the stretch'' and the
+optimizer's ``the gradient is tangentially zero'' are one computation written
+twice. So an optimizer descending this landscape is not merely finding the same
+answer as Part~I --- it is re-running the maximality lemma, its every step of not
+being able to improve corresponding to a step of the proof.
+
+This is not merely an analogy; it is how large singular value decompositions are
+actually computed. Rather than form $A\T A$ and diagonalize it --- impossible for
+a web-scale matrix --- one \emph{climbs}: start from a random $\mathbf{v}$,
+repeatedly apply $A\T A$ and renormalize (the \emph{power method}), and the
+iterate converges to $\vv1$. Peel it off and repeat for $\vv2$, exactly Part~I's
+maximize-then-recurse recursion, now run numerically. The neural version,
+\emph{Oja's rule}, is stochastic gradient ascent on the same objective and was
+one of the early bridges between optimization and unsupervised learning: a single
+neuron trained by it extracts the first principal component.
+
+\paragraph{Where the SVD's contribution stops.} That gradient ascent
+\emph{converges to the right answer} is not automatic. Maximizing $\|A\mathbf{v}\|$
+on the sphere is a non-convex problem with a critical point at every eigenvector;
+the method finds the global maximum only because the landscape is benign --- the
+non-maximal critical points are saddles the iteration slides off, a property that
+has to be proved, not assumed. And the fashionable claim that ``neural networks
+do SVD by gradient descent'' should be handled with care: it is a precise theorem
+for deep \emph{linear} networks, whose training dynamics learn the singular
+directions of the input--output correlation in order of decreasing $\sigma_i$
+(echoing Part~I's descending recursion), but it is not a statement about
+nonlinear networks in general. The clean connection is to the optimization
+landscape and the linear case; beyond that it is inspiration, not theorem.
+
+\section{Low-rank approximation: keeping the largest \texorpdfstring{$\sigma_i$}{sigma}}
+\label{sec:lowrank}
+
+Truncate the decomposition: keep the $k$ largest singular values and their
+vectors, discard the rest. The result $A_k = \sum_{i=1}^k \sigma_i \uu i \vv i\T$
+is a rank-$k$ matrix, and the remarkable fact --- the \emph{Eckart--Young
+theorem} --- is that it is the \emph{best} rank-$k$ approximation of $A$ there is:
+no other rank-$k$ matrix comes closer, in either the spectral or the Frobenius
+norm. The error is exactly the largest discarded singular value,
+\begin{equation}\min_{\operatorname{rank}(B) = k} \|A - B\|_2 = \|A - A_k\|_2 = \sigma_{k+1}.
+\end{equation}
+This is Part~I's geometry read as compression: the singular values, sorted, rank
+the directions of $A$ by importance, so keeping the top few keeps as much of $A$
+as any rank-$k$ object can. It is the mathematical core of image compression,
+noise filtering (small $\sigma_i$ are often noise), latent semantic analysis,
+recommender-system factorization (users and items as low-rank factors), and the
+low-rank adapters now used to fine-tune large models. In each, the SVD does not
+merely \emph{offer} a compression --- it offers the provably optimal one.
+
+\paragraph{Where the SVD's contribution stops.} Optimality is with respect to a
+particular measure of error --- the spectral or Frobenius norm, which weight all
+entries alike. When the application cares about something else (missing entries,
+non-negativity, sparsity, a probabilistic likelihood), the plain SVD truncation
+is no longer the right answer, and its relatives --- non-negative matrix
+factorization, probabilistic PCA, matrix completion --- take over. The SVD is
+optimal for the question ``closest rank-$k$ matrix in Euclidean norm,'' and
+knowing that is knowing exactly when to reach for it and when not to.
+
+\section{Eigenvectors of a graph: PageRank and spectral clustering}
+\label{sec:graph}
+
+The same machinery that finds the axes of an ellipsoid finds structure in a
+network, once the network is written as a matrix. Two examples, both resting on
+an eigenvector of a graph.
+
+\emph{PageRank} ranks web pages by importance, where a page is important if
+important pages link to it --- a circular definition that resolves into an
+eigenvector equation. Encode the link structure as a column-stochastic matrix
+$P$ (column $j$ spreads page $j$'s vote evenly over the pages it links to). The
+importance vector $\mathbf{r}$ is the one unchanged by the process,
+$P\mathbf{r} = \mathbf{r}$: the dominant eigenvector of $P$. And it is found by
+precisely the power method of \S\ref{sec:gradient} --- start with uniform
+importance, apply $P$ repeatedly, converge. PageRank is the maximize-and-settle
+idea of Part~I, run on the web.
+
+\emph{Spectral clustering} splits data into groups by building a graph of
+similarities, forming its \emph{Laplacian} $L = D - W$ (degrees minus
+weights), and reading off the eigenvector of $L$ with the second-smallest
+eigenvalue --- the \emph{Fiedler vector}. Its signs partition the graph into two
+well-separated pieces. The eigenvector exists, is orthogonal to the trivial
+all-ones eigenvector, and extremizes a meaningful quantity (it minimizes a
+relaxed cut) for exactly the reasons Part~I laid out: it is the extremal
+direction of a symmetric matrix.
+
+\paragraph{Where the SVD's contribution stops.} The spectral machinery guarantees
+that the eigenvectors exist, are orthogonal, and solve an extremal problem --- the
+content of Part~I, applied to a graph matrix. What it does \emph{not} decide is
+the modeling step that came first: how to turn pages into a stochastic matrix, or
+similarities into a Laplacian. Those choices --- which similarity, which
+normalization, how many clusters --- are where the domain judgment lives, and the
+eigenvector computation is only as good as the matrix it is handed. The SVD
+supplies the ``how''; the graph construction is the ``what,'' and it is not the
+SVD's to give.
+
+\subsection*{A pattern in what recurred}
+
+Look back at what carried over from Part~I. It was rarely a bare fact. The
+maximize-then-recurse construction reappeared as the power method and as
+PageRank; the lemma that the maximizer's gradient vanishes tangentially
+reappeared as an optimizer's stopping rule; the proof that two Gram matrices are
+two ends of one map reappeared as the transport at the center of kernel PCA. In
+each case the object that transferred was an \emph{argument} --- a sequence of
+steps first walked to establish that something is true --- now walked again to
+compute it, or to run it. Not every proof came along: the sign-flip that opened
+Part~I, the prettiest argument in it, has no descendant here; it is a way of
+\emph{seeing} that the frame exists, not a way of \emph{finding} it. What the
+recurrences have in common, and what that one lacks, is left for the reader to
+weigh.
 
 \section{Summary}
 
@@ -1520,6 +1711,26 @@ special. What makes the $V$-basis special is that in it the action is
 \emph{diagonal}: feed in $\vv3$, get out pure $\uu3$, scaled. Feed in any other
 basis and the images tangle together in a way that hides the geometry. Same
 information, worse presentation.
+
+That was Part~I: a frame found by watching an ellipse, a theorem earned rather
+than assumed. Part~II spent it, and the spending revealed the article's real
+subject. The maximize-and-recurse construction was not left behind on the page
+once the SVD was proved --- it walked off to become the power method, PageRank,
+the training of a principal-component neuron. The little lemma about where a
+stretch is maximal became the condition an optimizer halts on. The observation
+that $A\T A$ and $AA\T$ are two ends of one map became the trick that lets a
+kernel method reach into a space it cannot afford to enter. What looked like an
+island of geometry --- circles, ellipses, a rotating frame --- turned out to be
+the mainland: the structure quietly running tools that a working data scientist
+uses without a second thought.
+
+The lesson underneath, never argued but repeatedly shown, is that a proof is not
+only a certificate that something is true. It is a \emph{procedure} --- a route
+walked once to establish a fact, and available to be walked again to compute it.
+Understand the route, and you understand the algorithm; and the same
+understanding recognizes it the next time it appears wearing different clothes.
+That is the case for meeting a piece of mathematics like this one all the way
+down to its proofs, rather than importing it as a name and a library call.
 
 \section{Sources and prior art}
 \label{sec:sources}
