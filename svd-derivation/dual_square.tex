@@ -1,0 +1,21 @@
+% Commuting-square view of the two proofs
+\begin{tikzpicture}[scale=1,>={Stealth[length=1.8mm]},
+  node distance=0pt,
+  box/.style={draw=gcol!55,rounded corners=2pt,inner sep=6pt,font=\small,align=center,fill=gcol!5}]
+% corners
+\node[box] (is) at (0,2.4)   {input sphere\\ $\{\,\mathbf{x}:\|\mathbf{x}\|=1\,\}$};
+\node[box] (oe) at (6.6,2.4) {output ellipsoid\\ $\{\,A\mathbf{x}\,\}$};
+\node[box] (vi) at (0,0)     {$\mathbf{v}_i$: eigenvectors\\ of $A^{\!\top}\!A$ \;(input)};
+\node[box] (ui) at (6.6,0)   {$\mathbf{u}_i$: eigenvectors\\ of $AA^{\!\top}$ \;(output)};
+% top arrow: A
+\draw[->,vcol,thick] (is) -- node[above,font=\scriptsize,black]{$A$} (oe);
+% left path: extremize over sphere
+\draw[->,gcol,thick] (is) -- node[left,font=\scriptsize,black,align=right]{maximize\\ $\|A\mathbf{v}\|$}  (vi);
+% right path: extremize over ellipsoid
+\draw[->,gcol,thick] (oe) -- node[right,font=\scriptsize,black,align=left]{extremal\\ radius}  (ui);
+% bottom link: compatibility
+\draw[<->,ucol,thick] (vi) -- node[below,font=\scriptsize,black]{$A\mathbf{v}_i=\sigma_i\mathbf{u}_i$} (ui);
+% label the two proofs
+\node[font=\scriptsize,vcol] at (-1.35,1.2) {proof 1};
+\node[font=\scriptsize,ucol] at (7.95,1.2) {proof 2};
+\end{tikzpicture}

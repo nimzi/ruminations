@@ -6,6 +6,7 @@
 \usepackage{amsmath, amssymb, amsthm}
 \usepackage{mathtools}
 \usepackage{graphicx}
+\usepackage[font=sf]{caption}
 \numberwithin{equation}{section}
 % Equation numbers set as "Eq N.M" and hung in the right margin, styled after
 % the marginal "graffiti" in Knuth/Graham/Patashnik's Concrete Mathematics:
@@ -29,7 +30,7 @@
       Eq~\ignorespaces#1\unskip\@@italiccorr}}%
 }
 \makeatother
-\usepackage{microtype}
+\usepackage[expansion=false]{microtype}
 \usepackage{booktabs}
 \usepackage{tikz}
 \usepackage[colorlinks=true, linkcolor=black, urlcolor=black]{hyperref}
@@ -94,6 +95,46 @@ and relation to the eigendecomposition all follow from the same source. Worked
 examples are small enough to verify by hand; every numerical and symbolic claim
 has been checked.
 \end{abstract}
+
+\section*{Orientation}
+\addcontentsline{toc}{section}{Orientation}
+
+This is a mathematics article written with a data scientist's temperament. It
+does not open with a definition and a theorem; it opens with an experiment ---
+run a matrix on the unit circle and look at what comes back --- notices a
+pattern, checks whether the pattern survives in higher dimensions, and only then
+sets out to prove it. That arc, from observation to conjecture to proof, is not
+just how the material is delivered here; it is the lesson. The singular value
+decomposition is usually handed to the reader fully formed. This article instead
+tries to let it be \emph{discovered}, the way one might actually stumble onto it
+by paying attention to a picture.
+
+\paragraph{Tools you will want in hand.} The prerequisites are the standard
+sophomore sequence for a mathematics, physics, or data-science student, and
+nothing beyond it. From multivariable calculus (Calc III): directional
+derivatives and Lagrange multipliers. The one genuinely calculus-flavored step
+in the article --- \S\ref{sec:variational}, where we maximize the length of an
+image vector over the unit sphere --- is exactly the reasoning behind Lagrange
+multipliers, carried out by hand with an explicit curve rather than a multiplier;
+a reader who has seen constrained optimization will recognize it even though no
+$\lambda$ appears. From a proof-based linear algebra course: inner products and
+their bilinearity, orthonormal bases, orthogonal matrices, and
+eigenvalues and eigenvectors through the spectral theorem. From single-variable
+calculus: the intermediate value theorem, which does the entire work of the
+first existence proof (\S\ref{sec:existence}). And throughout, comfort reading a
+short proof --- the content prerequisites are light, but past
+\S\ref{sec:observe} the article genuinely argues rather than merely computes.
+
+\paragraph{Two signposts.} First, you will meet the spectral theorem twice: once
+as a result you already know and are asked to recall, and once, near the end of
+the construction (\S\ref{sec:algebraic}), as something the geometry rebuilds from
+scratch without assuming it. That doubling is deliberate --- the point is to
+watch a theorem you were handed get \emph{earned}. Second, this article is a
+stepping stone. The singular value decomposition is the geometric foundation
+underneath principal component analysis, low-rank approximation, latent-factor
+models, and much of the linear structure in modern machine learning. If you are
+heading toward those tools, the picture built here is what they stand on;
+\S\ref{sec:pca} makes the first of those connections explicit.
 
 \section{Circles become ellipses}
 \label{sec:observe}
@@ -190,10 +231,19 @@ The axes are perpendicular --- of course they are, they are the axes of an
 ellipse. The striking column is the last one: \emph{their preimages are
 perpendicular too.} The two input directions that $A$ sends to the ellipse's axes
 form a right angle, and $A$ carries that right angle to another right angle (the
-axes). Every example does this. So the answer to the question looks like
-\emph{yes} --- but examples are not a proof, and it is not yet clear why it should
-be true or whether the perpendicular preimage pair is unique. The next sections
-settle both, first in the plane, then in general.
+axes).
+
+This should be surprising, because $A$ mangles right angles as a rule. The shear
+$\left(\begin{smallmatrix}1&1\\0&1\end{smallmatrix}\right)$ sends the
+perpendicular pair $e_1, e_2$ to $(1,0)$ and $(1,1)$, which meet at $45^\circ$;
+run almost any perpendicular pair through almost any matrix and it comes out
+skew. Perpendicularity is not something linear maps respect. So a pair that $A$
+keeps perpendicular is a genuine exception, not the norm --- which is exactly
+what makes ``is there such a pair, and does it always land on the axes?'' a real
+question rather than an idle one. Every example above answers \emph{yes}, but
+examples are not a proof, and it is not yet clear why it should be true or
+whether the perpendicular preimage pair is unique. The next sections settle both,
+first in the plane, then in general.
 
 Because this pair is what we are hunting, give its members names now. Write
 $\vv1, \vv2$ for the preimages of the long and short axes, and $\sigma_1 \geq
@@ -367,7 +417,10 @@ a perfect orthonormal triple, angles $90.00^\circ$ to the numerical precision
 checked. Repeating with other $3\times 3$ matrices --- symmetric, asymmetric,
 random --- gives the same verdict every time (Figure~\ref{fig:threed}). The
 ellipsoid's axes always pull back to a perpendicular frame, and $A$ carries that
-frame to the axes: $A\vv i = \sigma_i \uu i$, just as in the plane.
+frame to the axes: $A\vv i = \sigma_i \uu i$, just as in the plane. And it is
+just as surprising: a \emph{generic} orthonormal triple, run through this same
+$A$, comes out skewed --- the axis-preimages are again the exception, not the
+rule.
 
 \begin{figure}[htbp]
 \centering
@@ -401,14 +454,12 @@ then to notice that one half of that equivalence never used the dimension; then
 to recurse on it, peeling off the longest axis at each step as the experiments
 suggest.
 
-\paragraph{A false start, worth naming.} It is tempting to hope that
-orthogonality in the domain forces orthogonality in the image, or the reverse.
-Neither holds. The shear sends the perpendicular pair $e_1, e_2$ to $(1,0)$ and
-$(1,1)$, which are $45^\circ$ apart; and pulling a perpendicular pair back
-through $A^{-1}$ generically yields a skew pair. Perpendicularity is not
-preserved in either direction --- which is exactly why the question ``is there
-\emph{some} frame it is preserved for?'' has content. The domain-side right
-angle in $f(\theta)$ is a constraint we impose, not a fact we derive.
+\paragraph{One thing the sweep assumes.} Recall that in $f(\theta)$ the input
+arms are kept perpendicular by construction --- the domain-side right angle is a
+constraint we \emph{impose}, and the whole question is whether the image-side
+right angle can be made to hold at the same time. We are not deriving that the
+frame is orthonormal; we are searching, among orthonormal input frames, for one
+whose images are orthonormal too.
 
 \subsubsection*{In the plane: the crossing is the peak}
 
@@ -675,11 +726,18 @@ diagonalization:
 \end{equation}
 
 \noindent
-Which is to say: \emph{the variational route has already proved the spectral
-theorem for $A\T A$.} The next section does not introduce new machinery. It
-names this result in the standard language, states it for symmetric matrices in
-general rather than for Gram matrices in particular, and notes that once one has
-it, the entire construction collapses to a single sentence.
+Which is to say: \emph{the variational\footnote{``Variational'' here is used in
+the linear-algebra sense: an object found by making a quantity extremal ---
+here, maximizing $\|Av\|$ over the unit sphere. This is the finite-dimensional
+cousin of the \emph{calculus of variations} proper, which extremizes
+\emph{functionals} over infinite-dimensional spaces of functions and produces
+Euler--Lagrange differential equations. None of that machinery appears here; our
+optimization lives on ordinary spheres in $\R^n$ and is settled by the
+first-derivative test (equivalently, Lagrange multipliers).} route has already
+proved the spectral theorem for $A\T A$.} The next section does not introduce new
+machinery. It names this result in the standard language, states it for symmetric
+matrices in general rather than for Gram matrices in particular, and notes that
+once one has it, the entire construction collapses to a single sentence.
 
 \paragraph{One caveat.} The route above is specific to matrices of the form
 $A\T A$, because it maximizes $\|Ax\|^2$, a quantity that is automatically
@@ -888,6 +946,95 @@ even though it does not scale, because it shows what the machinery above it is
 \emph{for}: the greedy maximization and the eigenvectors are both, in the end,
 hunting the right angle that survives.
 
+\subsection{The same frame from the other side}
+\label{sec:duality}
+
+Everything so far was built from the \emph{input} side. We rotated a frame in
+the domain, watched its images, and chose the frame $V$ whose images come out
+perpendicular --- which forced $V$ to diagonalize $A\T A$. But the picture that
+started the article was symmetric: a circle on the left, an ellipse on the
+right, and we could just as well have begun on the right. This subsection does
+that, and the reward is not a new theorem but a clearer view of the one we have.
+
+Begin, then, from the output. The ellipse's axes are a perpendicular frame
+$\uu1, \uu2$ in the codomain --- take that as given, it is what ``axes'' means.
+What are their preimages? Solving $A\vv i = \sigma_i \uu i$, the question is
+whether the $\vv i$ come out orthonormal. They do, and the reason is the mirror
+of the argument we already ran.
+
+\begin{figure}[htbp]
+\centering
+\input{dual_geo}
+\caption{\textbf{Two proofs, two ends of the map.} \emph{Left:} the input-side
+construction of \S\S\ref{sec:existence}--\ref{sec:algebraic} --- maximize
+$\|A\mathbf{v}\|$ over the sphere, landing on the eigenvectors $\vv i$ of
+$A\T A$. \emph{Right:} the output-side construction --- the ellipsoid's axes are
+its extremal radii, where the radius meets the surface at a right angle (marked),
+and these are the eigenvectors $\uu i$ of $AA\T$. The arrow $A$ links the two:
+$A\vv i = \sigma_i \uu i$. Same variational instinct --- extremize a length ---
+applied at opposite ends.}
+\label{fig:dual-geo}
+\end{figure}
+
+\paragraph{Why the axes are eigenvectors of $AA\T$.} An axis of the ellipsoid is
+a direction of extremal radius, and at the tip of an axis the boundary is
+perpendicular to the radius (Figure~\ref{fig:dual-geo}, right) --- slide along
+the surface anywhere else and the distance to the center changes to first order,
+so only there is the length stationary. Written in the output variable
+$\mathbf{y} = A\mathbf{x}$, the constraint $\|\mathbf{x}\| = 1$ becomes
+$\mathbf{y}\T (AA\T)^{-1} \mathbf{y} = 1$: the ellipsoid is the level set of the
+quadratic form $(AA\T)^{-1}$, and the axes of such a form are its eigenvectors.
+So the ellipsoid's axes are the eigenvectors of $AA\T$ --- the output-space
+companion of $A\T A$.
+
+\paragraph{The mirror computation.} With the $\uu i$ eigenvectors of $AA\T$, the
+preimages $\vv i = A^{-1}(\sigma_i \uu i)$ satisfy, for $i \neq j$,
+\begin{equation}\ip{\vv i}{\vv j}
+  = \sigma_i \sigma_j \, \ip{A^{-1}\uu i}{A^{-1}\uu j}
+  = \sigma_i \sigma_j \, \uu i\T (AA\T)^{-1} \uu j
+  = \frac{\sigma_i \sigma_j}{\lambda_j}\, \ip{\uu i}{\uu j}
+  = 0,
+\end{equation}
+using $(A^{-1})\T A^{-1} = (AA\T)^{-1}$ and $(AA\T)^{-1}\uu j = \lambda_j^{-1}\uu j$
+with $\lambda_j = \sigma_j^2$; the final zero is orthogonality of distinct
+eigenvectors of the symmetric matrix $AA\T$. The same substitution with $i = j$
+gives $\|\vv i\| = 1$. \emph{The preimages of the axes are orthonormal} ---
+proved, this time, without a single derivative, by borrowing the spectral
+theorem in the output space rather than building it in the input space.\footnote{%
+Written for invertible $A$, so that $A^{-1}$ makes sense and the ellipsoid is
+full-dimensional. For rectangular or singular $A$ the same argument runs with
+the pseudoinverse on the range of $A$.}
+
+\paragraph{One decomposition, two spectra.} The two proofs are mirror images
+across the map (Figure~\ref{fig:dual-square}). The input-side proof diagonalizes
+$A\T A$, an $n \times n$ matrix living in the domain, and produces $V$; the
+output-side proof diagonalizes $AA\T$, an $m \times m$ matrix living in the
+codomain, and produces $U$. These two matrices are different --- different
+sizes, even --- but they share their nonzero eigenvalues, the squared singular
+values $\sigma_i^2$, because both measure the same stretches. The singular value
+decomposition is precisely the statement that their eigenframes are
+\emph{compatible}: not two unrelated diagonalizations, but two ends of a single
+map welded together by $A\vv i = \sigma_i \uu i$.
+
+\begin{figure}[htbp]
+\centering
+\input{dual_square}
+\caption{\textbf{The two proofs as one square.} Down the left, the input-side
+construction lands on the eigenvectors of $A\T A$; down the right, the
+output-side construction lands on the eigenvectors of $AA\T$. Across the top,
+$A$ carries sphere to ellipsoid; across the bottom, $A\vv i = \sigma_i \uu i$
+identifies the two frames as the same decomposition seen from opposite corners.
+The SVD is the square commuting.}
+\label{fig:dual-square}
+\end{figure}
+
+\noindent
+This is why the article kept only one of the two: they are the same content, and
+the input side is where the frame can be \emph{discovered} rather than merely
+verified --- you can rotate it and watch the crossing happen. The output side,
+elegant as it is, assumes the axes are already in hand. Kept together, they say
+that whichever end you grip the map by, the same orthonormal frame is waiting.
+
 \section{Naming the pieces}
 \label{sec:naming}
 
@@ -897,11 +1044,32 @@ factor out the lengths:
 \begin{equation}A \vv i \;=\; \sigma_i \uu i, \qquad \sigma_i = \|A\vv i\| \geq 0, \qquad \|\uu i\| = 1 .
 \end{equation}
 The $\sigma_i$ are the \textbf{singular values} and the $\uu i$ are the
-\textbf{left singular vectors}. Collecting these $n$ equations into matrix form
-gives $AV = U\Sigma$, i.e.\ $A = U\Sigma V\T$. The construction of
-\S\S\ref{sec:existence}--\ref{sec:algebraic} has, without announcing it, proved
-exactly this --- so it is worth stating plainly, as the theorem the whole first
-half was after.
+\textbf{left singular vectors}.
+
+Before collecting these into a formula, it is worth seeing what they say about
+$A$ as a map. The $\vv i$ are an orthonormal basis of the input space, so any
+input $\mathbf{x}$ has an expansion $\mathbf{x} = c_1 \vv1 + \dots + c_n \vv n$,
+where $c_i = \ip{\mathbf{x}}{\vv i}$ is simply the coordinate of $\mathbf{x}$
+along $\vv i$. Apply $A$ and use linearity together with $A\vv i = \sigma_i\uu i$:
+\begin{equation}A\mathbf{x} = c_1 (A\vv1) + \dots + c_n (A\vv n)
+  = \sigma_1 c_1 \uu1 + \dots + \sigma_n c_n \uu n .
+\end{equation}
+Read that off slowly. $A$ takes the coordinate of $\mathbf{x}$ along each input
+axis $\vv i$, scales it by $\sigma_i$, and lays the result down along the
+matching output axis $\uu i$. The coordinates that go in are the coordinates that
+come out --- only the axis labels change, $\vv i \mapsto \uu i$, and each is
+stretched by its own $\sigma_i$. In these two bases the map is \emph{diagonal}:
+whatever tangle $A$ shows in the standard basis, in the right input frame and the
+right output frame it does nothing more complicated than scale each axis. Bundle
+this action into matrices --- $V\T$ reads out the input coordinates, $\Sigma$
+scales them, $U$ writes them along the output axes --- and it \emph{is} a
+factorization:
+\begin{equation}\boxed{\; A = U \Sigma V\T \;}
+\end{equation}
+The construction of \S\S\ref{sec:existence}--\ref{sec:algebraic} has, without
+announcing it, proved that such a frame always exists --- so the factorization is
+not a lucky feature of some matrices but a theorem about all of them, worth
+stating plainly.
 
 \begin{quote}
 \textbf{Singular value decomposition.} \itshape Every real $m \times n$ matrix
@@ -919,9 +1087,6 @@ freedoms catalogued in \S\ref{sec:uniqueness}.
 \end{quote}
 
 \noindent
-The boxed relation is the same statement seen through its columns:
-\begin{equation}\boxed{\; A = U \Sigma V\T \;}
-\end{equation}
 The names \emph{left} and \emph{right} are positional --- $U$ sits on the left
 of the product, $V$ on the right --- and carry no deeper meaning.
 
@@ -1133,54 +1298,58 @@ which forces the relation. It is easy to mistake this tidiness for alignment,
 or for a general fact. It is neither. The generic matrix above has no such
 pattern, and it is the honest picture.
 
-\section{Can you choose the input frame?}
+\section{Can you choose the frame? Uniqueness and freedom}
+\label{sec:uniqueness}
 \label{sec:choose}
 
-A natural question: given $A$, could you pick \emph{any} orthonormal basis $V$
-of the input space and find a matching orthonormal $U$ and some diagonal
-$\Sigma'$ with $A = U \Sigma' V\T$? Perhaps the freedom to choose $\Sigma'$
-buys enough slack.
+A natural question tests how much the construction really pins down: given $A$,
+could you pick \emph{any} orthonormal basis $V$ of the input space and find a
+matching orthonormal $U$ and some diagonal $\Sigma'$ with $A = U \Sigma' V\T$?
+Perhaps the freedom to choose $\Sigma'$ buys enough slack.
 
 No. Requiring $AV = U\Sigma'$ says precisely that $A\vv1, \dots, A\vv n$ are
 mutually orthogonal --- and the $\sigma_i'$ are then \emph{forced} to be the
 norms $\|A\vv i\|$, not chosen. The freedom in $\Sigma'$ is illusory; the
 orthogonality of the images is the entire constraint, and it is the same
-constraint $f(\theta) = 0$ from \S\ref{sec:uniqueness-f}.
+constraint $f(\theta) = 0$ from \S\ref{sec:uniqueness-f}. In the plane this is
+exactly what Figure~\ref{fig:sweep} shows: of the continuum of frames, two
+crossings, describing one.
 
-In the plane this is exactly what Figure~\ref{fig:sweep} shows: of the
-continuum of frames, two crossings, describing one. In $\R^n$ the counting
-tells the same story. $V$ has $n(n-1)/2$ free parameters; requiring the $n$
-images to be pairwise orthogonal imposes one equation per pair, also $n(n-1)/2$.
-Constraints exactly consume parameters, so the solution set is generically
-discrete --- finitely many sign and permutation variants of one frame, not a
-continuum. Equivalently, $A\T A = V\Sigma'^2 V\T$ forces $V$ to be an
-eigenbasis of the symmetric matrix $A\T A$, and eigenbases are rigid.
+The count confirms it in any dimension, and the same count will measure the
+leftover freedom in a moment, so it is worth doing once. An orthonormal frame
+$V$ in $\R^n$ has $n(n-1)/2$ degrees of freedom --- build it column by column:
+$\vv1$ is any unit vector ($n-1$ parameters), $\vv2$ any unit vector orthogonal
+to it ($n-2$), and so on, giving $(n-1) + (n-2) + \dots + 0 = n(n-1)/2$. (For
+$n=2$ this is $1$, a single angle; for $n=3$ it is $3$, the Euler angles.)
+Requiring the $n$ images to be pairwise orthogonal imposes one equation per
+pair, again $n(n-1)/2$. Constraints exactly consume parameters, so the solution
+set is generically discrete --- finitely many sign and permutation variants of
+one frame, not a continuum. Equivalently, $A\T A = V\Sigma'^2 V\T$ forces $V$ to
+be an eigenbasis of the symmetric $A\T A$, and eigenbases are rigid.
 
-\paragraph{The exception.} The degenerate case of \S\ref{sec:uniqueness-f}
-reappears here: when $A\T A = \sigma^2 I$, every direction stretches equally,
-every orthonormal $V$ works, and $U = AV/\sigma$. The image of the sphere is a
-sphere, so no direction is distinguished. The SVD tells you nothing you did not
-already know, and is maximally non-unique.
+\paragraph{The one exception.} When $A\T A = \sigma^2 I$ --- $A$ a scalar
+multiple of an orthogonal matrix --- every direction stretches equally, every
+orthonormal $V$ works, and $U = AV/\sigma$. The image of the sphere is a sphere,
+so no direction is distinguished. This is worth stating as a principle:
+\emph{the content of the SVD is anisotropy.} The decomposition earns its keep
+exactly when the singular values differ; the ratio $\sigma_1/\sigma_n$ is the
+eccentricity of the image ellipsoid, and also the condition number.
 
-This is worth stating as a principle: \emph{the content of the SVD is
-anisotropy.} The decomposition earns its keep exactly when the singular values
-differ. The ratio $\sigma_1/\sigma_n$ is the eccentricity of the image
-ellipsoid, and also the condition number.
+\subsection*{Exactly what freedom remains}
 
-\section{Uniqueness}
-\label{sec:uniqueness}
-
-The singular values are unique (with the descending convention
-$\sigma_1 \geq \dots \geq \sigma_r > 0$). The frames are not, and the
-freedoms are:
+So $V$ is forced --- but not \emph{completely}. The singular values are rigid
+(with the descending convention $\sigma_1 \geq \dots \geq \sigma_r > 0$ they are
+uniquely determined by $A$), yet the frames retain a sliver of freedom, and it
+is worth naming precisely what:
 
 \begin{enumerate}\itemsep0.3em
-\item \textbf{Sign/phase.} For a simple singular value, $\uu i \to -\uu i$ and
+\item \textbf{Sign.} For a simple singular value, $\uu i \to -\uu i$ and
 $\vv i \to -\vv i$ together. The coupling is essential: you cannot flip one
 without the other, since $A = U\Sigma V\T$ must be preserved.
 \item \textbf{Repeated singular values.} If $\sigma_i$ has multiplicity $k$,
 the corresponding $k$-dimensional subspaces of $U$ and $V$ can be rotated by
-any $k \times k$ orthogonal $Q$ --- applied to \emph{both}.
+any $k \times k$ orthogonal matrix --- applied to \emph{both}. (This is the
+exception above, localized to one repeated value instead of all of them.)
 \item \textbf{Zero singular values.} The columns of $U$ spanning
 $\operatorname{coker}(A)$ and of $V$ spanning $\ker(A)$ are arbitrary
 orthonormal bases of those subspaces, independent of each other.
@@ -1188,37 +1357,29 @@ orthonormal bases of those subspaces, independent of each other.
 \end{enumerate}
 
 \begin{claim}
-For $A$ of full rank with distinct singular values, the thin SVD is unique up
-to the signs in item 1.
+For $A$ of full rank with distinct singular values, the (thin) SVD is unique up
+to the signs in item~1.
 \end{claim}
 
-\subsection*{Parameter count}
+\noindent
+That is the whole of it: the stretches are pinned exactly, the frames up to
+signs, with extra room only where a singular value repeats or vanishes.
 
-A general $n \times n$ matrix has $n^2$ free parameters. The SVD supplies
-\begin{equation}\underbrace{\tfrac{n(n-1)}{2}}_{V} + \underbrace{n}_{\Sigma} + \underbrace{\tfrac{n(n-1)}{2}}_{U} \;=\; n^2 .
+\paragraph{A reparametrization, not a compression.} Stepping back, the SVD of an
+$n \times n$ matrix supplies
+\begin{equation}\underbrace{\tfrac{n(n-1)}{2}}_{V} + \underbrace{n}_{\Sigma} + \underbrace{\tfrac{n(n-1)}{2}}_{U} \;=\; n^2
 \end{equation}
-It is a reparametrization, not a compression. The information is rearranged
-from ``what each column does'' into ``(input frame, stretches, output frame)'',
-and that arrangement is where the geometry lives.
+numbers --- exactly the $n^2$ entries it started with. The information is
+rearranged from ``what each column does'' into ``(input frame, stretches, output
+frame)'', and that arrangement is where the geometry lives.
 
-The $n(n-1)/2$ is the dimension of the orthogonal group $O(n)$. Two ways to see
-it. First, $V\T V = I$ is a symmetric matrix equation, imposing $n(n+1)/2$
-constraints on $n^2$ entries, leaving $n^2 - n(n+1)/2 = n(n-1)/2$. Second,
-build $V$ column by column: $\vv1$ is any unit vector ($n-1$ parameters),
-$\vv2$ any unit vector orthogonal to it ($n-2$), and so on, giving
-$(n-1) + (n-2) + \dots + 0 = n(n-1)/2$. For $n = 2$ this is $1$ --- a rotation
-is an angle. For $n = 3$ it is $3$ --- the Euler angles.
-
-\subsection*{$U$ and $V$ are independent}
-
-Pick any orthogonal $U$, any orthogonal $V$, any nonnegative diagonal $\Sigma$:
-then $A = U\Sigma V\T$ is a matrix with exactly that SVD. Nothing couples the
-two frames, and the parameter count above confirms there is room for both.
-
-Going \emph{backwards} from a given $A$, however, the frames are determined and
-generally unrelated --- you cannot infer one from the other without passing
-through $A$. This is precisely why the SVD carries more information than a
-single eigenbasis: two independent frames rather than one.
+\paragraph{$U$ and $V$ are independent.} One consequence of the count deserves
+emphasis. Pick any orthogonal $U$, any orthogonal $V$, any nonnegative diagonal
+$\Sigma$: then $A = U\Sigma V\T$ is a matrix with exactly that SVD. Nothing
+couples the two frames. Going \emph{backwards} from a given $A$, they are
+determined but generally unrelated --- you cannot infer one from the other
+without passing through $A$. This is precisely why the SVD carries more
+information than a single eigenbasis: two independent frames rather than one.
 
 \section{Relation to eigenvalues and eigenvectors}
 \label{sec:eigen}
@@ -1303,6 +1464,48 @@ with a complex number $z = re^{i\theta}$ --- modulus $r \geq 0$ times a unit
 phase --- is exact and gives the decomposition its name: $P$ is the modulus,
 $Q$ the phase.
 
+\section{Where this leads: principal component analysis}
+\label{sec:pca}
+
+If you have ever run principal component analysis, reduced the dimension of a
+dataset, or called a low-rank approximation, you have used the object this
+article has been building --- though probably without the picture. Here is the
+connection, in one step.
+
+Let $A$ be a data matrix: $n$ rows, one per observation, and $p$ columns, one
+per feature, with each column \emph{centered} to have mean zero. Then the
+$p \times p$ matrix
+\begin{equation}\frac{1}{n-1}\,A\T A
+\end{equation}
+is exactly the sample covariance matrix of the features --- its $(i,j)$ entry is
+the covariance of feature $i$ with feature $j$, because centering makes the
+column inner products into covariances. But $A\T A$ is the very matrix whose
+eigenvectors are the right singular vectors of $A$ (\S\ref{sec:algebraic}). So
+the right singular vectors $\vv1, \vv2, \dots$ are the eigenvectors of the
+covariance --- the \textbf{principal components}, the orthogonal directions of
+greatest variance in the data. And the singular values give the variances
+outright: the spread of the data along $\vv i$ is
+\begin{equation}\frac{\sigma_i^2}{n-1},
+\end{equation}
+so the largest singular value marks the direction of most variance, the next the
+most among directions orthogonal to it, and so on --- which is precisely the
+greedy description of the frame from \S\ref{sec:variational}, now read as a
+statement about data.
+
+The geometry carries over intact. The ellipsoid this article has drawn since
+\S\ref{sec:observe} --- the image of the unit sphere under $A$ --- is, for a data
+matrix, the shape of the data cloud itself, and its axes are the principal axes.
+Finding the perpendicular frame that maps to those axes, the whole problem the
+article set out to solve, \emph{is} finding the principal components. PCA is not
+an application of the SVD so much as the same picture wearing the clothes of
+statistics.
+
+This is one doorway of several. The same decomposition underlies low-rank
+approximation (keep the largest few $\sigma_i$, discard the rest --- the optimal
+compression of $A$), latent-factor models in recommendation and language, and a
+great deal of the linear structure inside modern machine learning. Each is a
+further story; the geometry built here is the ground they all stand on.
+
 \section{Summary}
 
 \begin{quote}
@@ -1317,6 +1520,110 @@ special. What makes the $V$-basis special is that in it the action is
 \emph{diagonal}: feed in $\vv3$, get out pure $\uu3$, scaled. Feed in any other
 basis and the images tangle together in a way that hides the geometry. Same
 information, worse presentation.
+
+\section{Sources and prior art}
+\label{sec:sources}
+
+None of the mathematics here is new. The contribution, if any, is one of
+arrangement: a path of discovery assembled from standard pieces, with the
+powerful theorem placed at the end as a name for what the geometry already built
+rather than as an assumption at the start. This section says plainly where each
+piece comes from.
+
+\paragraph{The classical results.} The picture of a matrix carrying the unit
+sphere to an ellipsoid, with the singular values as semi-axis lengths, is the
+standard geometric introduction to the SVD; it is the opening of Trefethen and
+Bau's \emph{Numerical Linear Algebra}~\cite{trefethen1997}, whose Lecture~4 this
+article's \S\ref{sec:ellipsoid} follows. The variational construction of
+\S\ref{sec:variational} --- maximize $\|Av\|$, then recurse on the orthogonal
+complement --- is also theirs, and is the proof of existence given in most
+graduate texts. The route through the spectral theorem applied to $A\T A$
+(\S\ref{sec:algebraic}), and the polar decomposition read off from it
+(\S\ref{sec:polar}), are presented exactly this way in Axler's \emph{Linear
+Algebra Done Right}~\cite{axler2024}, where the SVD appears as a consequence of
+the spectral theorem and leads directly to the polar form. The computational
+origin of the subject --- how one actually calculates an SVD --- is Golub and
+Kahan~\cite{golub1965}; the early history is surveyed by
+Stewart~\cite{stewart1993}. The four-fundamental-subspaces framing used in
+\S\ref{sec:ellipsoid} is Strang's~\cite{strang2019}.
+
+\paragraph{The closest relative.} The organizing conceit of this article ---
+adjust a perpendicular frame until its images are also perpendicular, and that
+configuration is the SVD --- appears, in interactive form, in Heath's
+\emph{Interactive Educational Modules in Scientific
+Computing}~\cite{heath2018, heath-iem}. That module places candidate singular
+vectors on the image ellipse and lets the reader drag them until the frame is
+orthogonal in both spaces at once, displaying the resulting $U$, $\Sigma$, $V$.
+It is the same equivalence, driven from the image side rather than the domain
+side, and it stops at two-dimensional visualization: it lets one \emph{find} the
+surviving frame but does not argue that one must exist, and does not carry the
+construction to higher dimensions. The existence argument of \S\ref{sec:existence}
+and the recursion of \S\ref{sec:variational} are what this article adds on top of
+that shared starting point.
+
+\paragraph{The gap this fills.} Tomasi's widely used
+notes~\cite{tomasi} state the central observation directly --- the two pairs of
+points on the unit circle mapping to the ends of the ellipse's axes ``are always
+orthogonal'' --- and then remark that ``simple and fundamental as this geometric
+fact may be, its proof by geometric means is cumbersome,'' and prove it
+algebraically instead. This article is, in effect, the geometric proof Tomasi
+declines to give: the sign-flip argument of \S\ref{sec:planar} is the missing
+elementary reason the axis-preimages are perpendicular, and the identity
+$dg/d\theta = 2f$ of \S\ref{sec:variational} is what ties that perpendicularity
+to the extremal stretch that the algebraic proofs start from. Neither is deep,
+and neither is new in substance; but stating them, and staging the whole
+development so the spectral theorem is earned rather than assumed, is the point
+of the exercise.
+
+This is not a survey. The literature on the SVD is vast, and the references
+above are entry points chosen for their relevance to the particular path taken
+here, not a representative sample of the field.
+
+\begin{thebibliography}{9}
+
+\bibitem{trefethen1997}
+L.~N. Trefethen and D.~Bau III,
+\emph{Numerical Linear Algebra},
+SIAM, Philadelphia, 1997.
+
+\bibitem{axler2024}
+S.~Axler,
+\emph{Linear Algebra Done Right},
+4th ed., Undergraduate Texts in Mathematics, Springer, Cham, 2024.
+
+\bibitem{golub1965}
+G.~Golub and W.~Kahan,
+Calculating the singular values and pseudo-inverse of a matrix,
+\emph{J. Soc. Indust. Appl. Math. Ser.~B: Numer. Anal.}~\textbf{2} (1965),
+205--224.
+
+\bibitem{stewart1993}
+G.~W. Stewart,
+On the early history of the singular value decomposition,
+\emph{SIAM Review}~\textbf{35} (1993), 551--566.
+
+\bibitem{strang2019}
+G.~Strang,
+\emph{Linear Algebra and Learning from Data},
+Wellesley--Cambridge Press, Wellesley, MA, 2019.
+
+\bibitem{heath2018}
+M.~T. Heath,
+\emph{Scientific Computing: An Introductory Survey},
+revised 2nd ed., Classics in Applied Mathematics, SIAM, Philadelphia, 2018.
+
+\bibitem{heath-iem}
+M.~T. Heath et al.,
+Interactive Educational Modules in Scientific Computing,
+University of Illinois at Urbana--Champaign.
+\texttt{https://heath.cs.illinois.edu/iem/}
+
+\bibitem{tomasi}
+C.~Tomasi,
+Singular Value Decomposition,
+lecture notes, Department of Computer Science, Duke University.
+
+\end{thebibliography}
 
 \bigskip
 \hrule
