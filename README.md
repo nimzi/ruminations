@@ -63,6 +63,21 @@ An article rebuilding the SVD from a geometric question rather than the usual sp
 
 **Key concepts**: Linear algebra, singular value decomposition, orthogonal frames, spectral theorem, geometric intuition
 
+### From Bernoulli Outcomes to Binary Cross-Entropy
+**Files**: `binary_cross_entropy_lecture.tex`, `binary_cross_entropy_lecture.pdf`
+
+Lecture notes deriving binary cross-entropy rather than presenting it as a formula to memorise. The loss is built up from a chain of modelling decisions — Bernoulli outcomes, a conditional probability from logistic regression, maximum likelihood, and logarithms turning multiplied probabilities into added evidence. Covers:
+
+- The Bernoulli model, the logit/sigmoid link, and the distinction between probability and likelihood
+- Why the logarithm is conceptually natural, not merely numerically convenient
+- Maximum likelihood for a logistic-regression dataset, and the identity BCE = negative Bernoulli log-likelihood
+- Entropy, cross-entropy, and KL divergence; why log loss rewards honest probabilities
+- The gradient $p - y$, convexity in the logit parameters, and numerically stable computation from logits
+- Why ordinary squared error is the wrong choice here, plus assumptions, limitations, and common misconceptions
+- How BCE manifests across ML algorithms: neural networks, decision trees, random forests, gradient boosting, multi-label learning, and weighted/focal variants
+
+**Key concepts**: Bernoulli distribution, logistic regression, maximum likelihood, cross-entropy, KL divergence, log loss, convex optimisation, numerical stability
+
 ## Future Directions
 
 - Extension to other Platonic solids
