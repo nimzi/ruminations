@@ -78,6 +78,32 @@ Lecture notes deriving binary cross-entropy rather than presenting it as a formu
 
 **Key concepts**: Bernoulli distribution, logistic regression, maximum likelihood, cross-entropy, KL divergence, log loss, convex optimisation, numerical stability
 
+### Why Zero-Centered Hidden Activations Help Gradient Descent
+**Folder**: `zero-centered-activations/`
+**Files**: `zero_centered_activations.tex`, `zero_centered_activations.pdf`, `lecture_7.pdf`
+
+An article on why a saturating activation with range $(-1,1)$ tends to train better than an
+identically shaped one with range $(0,2)$, even though a following bias layer makes the two
+representationally equivalent. The argument is traced through backpropagation rather than
+asserted as folklore. Covers:
+
+- Why a following bias means the two activations have the same representational power, so the difference must be an optimisation effect rather than a capacity one
+- The sign structure backpropagation exposes: all-positive activations force every weight in a row to share the sign of the upstream gradient
+- The resulting zig-zag descent path, and why random initialization makes the constraint bite harder
+- A zero-mean reading that separates a "baseline" component from the "variation" that actually carries signal
+- The Hessian view of conditioning, with a worked numerical example
+- Where the preference breaks down: saturation dominating centering, range not implying empirical centering, output layers with different semantics
+- Subdivision- and spline-based saturating activations, including a quadratic spline construction
+- Normalization layers and centering — BatchNorm, LayerNorm, and RMSNorm as a qualification to the story
+
+**Key concepts**: Neural network training, activation functions, backpropagation, gradient descent conditioning, Hessian, zig-zag dynamics, weight initialization, batch/layer normalization, RMSNorm
+
+**Companion slides**: `lecture_7.pdf` is Stanford CS231n Lecture 7, *Training Neural Networks*
+(Fei-Fei Li, Yunzhu Li, Ruohan Gao; April 25, 2023), included as the source material the article
+expands on — its activation-functions section is where the "not zero-centered output" and zig-zag
+gradient argument are introduced. Third-party course material, retained here for reference and not
+covered by this repository's license.
+
 ## Future Directions
 
 - Extension to other Platonic solids
