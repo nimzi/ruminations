@@ -13,8 +13,10 @@
 \usetikzlibrary{arrows.meta,positioning,calc,patterns}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
+\usepackage{tocloft}
 \usepackage{hyperref}
 \usepackage{cleveref}
+\usepackage{fancyhdr}
 
 \definecolor{deepblue}{RGB}{36,76,120}
 \definecolor{softgreen}{RGB}{228,241,224}
@@ -28,13 +30,19 @@
   linkcolor=deepblue,
   citecolor=deepblue,
   urlcolor=deepblue,
-  pdftitle={Why Zero-Centered Hidden Activations Help Gradient Descent}
+  pdftitle={Why Zero-Centered Hidden Activations Help Gradient Descent},
+  pdfauthor={Paul Agron}
 }
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.65em}
 \setlist[itemize]{topsep=0.3em,itemsep=0.2em}
 \setlist[enumerate]{topsep=0.3em,itemsep=0.2em}
+
+% TOC folios: same text family as the document, regular weight, visually quiet.
+% Hierarchy is carried by entry weight/indentation rather than a competing numeral face.
+\renewcommand{\cftsecpagefont}{\normalfont\rmfamily\mdseries\color{black!72}}
+\renewcommand{\cftsubsecpagefont}{\normalfont\rmfamily\mdseries\color{black!72}}
 
 \newcommand{\sigmoid}{\operatorname{sigmoid}}
 \newcommand{\E}{\mathbb{E}}
@@ -49,13 +57,31 @@
 \end{minipage}}
 \end{center}}
 
-\title{\textbf{Why Zero-Centered Hidden Activations Help Gradient Descent}\\
-\large From sigmoid vs. tanh to gradient geometry, zig-zagging, and conditioning}
-\author{}
-\date{}
+% Page numbers use a restrained sans-serif face, distinct from section numbering.
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\sffamily\small\color{black!55}\thepage}
 
 \begin{document}
-\maketitle
+
+% Custom title block: one coherent serif system with hierarchy from size, weight, and spacing.
+\begin{center}
+\vspace*{-1.0em}
+{\color{deepblue}\fontfamily{bch}\selectfont\bfseries\fontsize{25}{29}\selectfont
+Why Zero-Centered Hidden Activations\\[0.08em]
+Help Gradient Descent\par}
+\vspace{0.60em}
+{\large\fontfamily{bch}\selectfont\color{black!65}\itshape
+From sigmoid vs.\ tanh to gradient geometry, zig-zagging, and conditioning\par}
+\vspace{0.62em}
+{\fontfamily{bch}\selectfont\large\bfseries\color{black!82} Paul Agron\par}
+\vspace{0.14em}
+{\fontfamily{bch}\selectfont\small\color{black!60} September 12, 2026\par}
+\vspace{0.62em}
+{\color{deepblue}\rule{0.44\linewidth}{0.8pt}}
+\end{center}
+\vspace{0.9em}
 
 \begin{abstract}
 Two activation functions can have the same nonlinear shape, the same derivative profile, and the same representational power, yet train differently under gradient descent.  A particularly clean example is obtained by comparing
@@ -177,64 +203,154 @@ again gives the identical value \(Wh+b\).
 
 \section{Backpropagation exposes the key sign effect}
 
-Consider a downstream neuron with inputs \(h_1,\ldots,h_m\):
+This section introduces the one piece of backpropagation notation needed for the zero-centering argument.  The goal is not to give a complete treatment of backpropagation, but to make the sign logic fully explicit.
+
+\subsection{Anatomy of one downstream neuron}
+
+Consider one neuron receiving the hidden activations
+\[
+  h_1,h_2,\ldots,h_m
+\]
+from the previous layer.  Collect them into the incoming activation vector
 \begin{equation}
-  z=\sum_{j=1}^{m}w_j h_j+b,
-  \qquad
+  \mathbf h=
+  \begin{pmatrix}
+    h_1\\ h_2\\ \vdots\\ h_m
+  \end{pmatrix}.
+\end{equation}
+The corresponding incoming weights are
+\begin{equation}
+  \mathbf w=
+  \begin{pmatrix}
+    w_1\\ w_2\\ \vdots\\ w_m
+  \end{pmatrix}.
+\end{equation}
+The neuron first forms its preactivation
+\begin{equation}
+  z=\mathbf w^T\mathbf h+b
+   =\sum_{j=1}^{m}w_j h_j+b,
+  \label{eq:preactivation}
+\end{equation}
+and then applies its activation function
+\begin{equation}
   y=\phi(z).
 \end{equation}
-For one training example, define the backpropagated scalar
+Thus \(h_j\) is simply the activation arriving along the connection whose weight is \(w_j\).
+
+\subsection{The scalar backpropagated error signal \texorpdfstring{\(\delta\)}{delta}}
+
+For one fixed neuron, one fixed training example, and the current parameter values, define
 \begin{equation}
-  \delta \equiv \frac{\partial L}{\partial z}.
+  \boxed{\delta\equiv\frac{\partial L}{\partial z}.}
+  \label{eq:delta}
 \end{equation}
-Then
+Here \(\delta\) is a \emph{scalar value}: it measures how sensitive the final loss is to a small change in this neuron's preactivation \(z\).
+
+The same scalar \(\delta\) is used for all of the incoming weights of this particular neuron.  It is not, however, a global constant: it generally changes from one training example to another, from one neuron to another, and as the network parameters change during training.
+
+By the chain rule,
 \begin{equation}
-  \boxed{\frac{\partial L}{\partial w_j}=\delta h_j}
+  \delta
+  =\frac{\partial L}{\partial z}
+  =\frac{\partial L}{\partial y}\,
+    \frac{\partial y}{\partial z}
+  =\frac{\partial L}{\partial y}\cdot\phi'(z).
+  \label{eq:delta-chain}
+\end{equation}
+This makes clear why \(\delta\) may be either positive or negative: its sign depends on the downstream loss gradient and on the current network state.
+
+\subsection{Gradient with respect to the incoming weights}
+
+For the scalar weight \(w_j\), the chain rule gives
+\begin{align}
+  \frac{\partial L}{\partial w_j}
+  &=\frac{\partial L}{\partial z}\,
+    \frac{\partial z}{\partial w_j} \\
+  &=\delta\cdot h_j,
   \label{eq:basicgrad}
-\end{equation}
-and
+\end{align}
+because \(\partial z/\partial w_j=h_j\) from \cref{eq:preactivation}.  Likewise,
 \begin{equation}
-  \frac{\partial L}{\partial b}=\delta.
+  \frac{\partial L}{\partial b}
+  =\frac{\partial L}{\partial z}\,
+   \frac{\partial z}{\partial b}
+  =\delta\cdot1
+  =\delta.
 \end{equation}
 
-Equation \cref{eq:basicgrad} is the heart of the Stanford CS231n intuition.  If the previous hidden layer uses an activation whose output is always positive, such as a logistic sigmoid, then
+\keybox{\textbf{Interpretation.} For one incoming connection,
 \[
-  h_j>0 \quad \text{for all }j.
+  \underbrace{\frac{\partial L}{\partial w_j}}_{\text{weight gradient}}
+  =
+  \underbrace{\delta}_{\text{error signal}}
+  \cdot
+  \underbrace{h_j}_{\text{incoming activation}}.
 \]
-Therefore, for that single example,
+}
+
+Collecting all incoming-weight derivatives into one vector gives
+\begin{equation}
+  \boxed{
+  \nabla_{\mathbf w}L
+  =
+  \begin{pmatrix}
+    \dfrac{\partial L}{\partial w_1}\\[3pt]
+    \dfrac{\partial L}{\partial w_2}\\
+    \vdots\\
+    \dfrac{\partial L}{\partial w_m}
+  \end{pmatrix}
+  =\delta\cdot\mathbf h.}
+  \label{eq:vectorgrad}
+\end{equation}
+The notation \(\nabla_{\mathbf w}L\) means the gradient with respect to \emph{all incoming weights of the current neuron}, not with respect to every weight in the entire neural network.
+
+\subsection{Why the sign of the hidden activation matters}
+
+\Cref{eq:vectorgrad} is the heart of the Stanford CS231n intuition.  If the previous hidden layer uses an activation whose output is always positive, such as a logistic sigmoid, then
+\[
+  h_j>0 \qquad \text{for every }j.
+\]
+For one training example, the single scalar \(\delta\) therefore determines the sign of every incoming-weight gradient:
 \begin{equation}
   \operatorname{sign}\!\left(\frac{\partial L}{\partial w_j}\right)
   =\operatorname{sign}(\delta)
   \qquad \text{for every }j.
   \label{eq:samesign}
 \end{equation}
-All components of the gradient vector have the same sign.  The gradient lies in an ``all positive'' orthant or an ``all negative'' orthant.
+Consequently, all components of \(\nabla_{\mathbf w}L\) are positive when \(\delta>0\), or all are negative when \(\delta<0\).  In two dimensions, the gradient can therefore point only into an all-positive or all-negative quadrant for that example.
 
-If the hidden activations are centered and may take both signs, the components \(\delta h_j\) need not share a sign.  A single example can immediately produce directions such as
+If the hidden activations are centered and may take both signs, the products \(\delta\cdot h_j\) need not share a sign.  A single example can immediately produce a mixed-sign gradient such as
 \[
   (+,-,+,-,\ldots),
 \]
-which are unavailable when every \(h_j\) is positive.
+which is impossible when every \(h_j\) is positive.
 
-\subsection{The upstream gradient may be positive or negative even when activations are positive}
+\subsection{Why \texorpdfstring{\(\delta\)}{delta} itself may be positive or negative}
 
-The fact that a sigmoid output \(y\) is positive does \emph{not} imply that \(\partial L/\partial y\) is positive.  For squared error,
+The fact that a sigmoid output \(y\) is positive does \emph{not} imply that \(\partial L/\partial y\), and hence \(\delta\), must be positive.  For squared error,
 \[
   L=\frac12(y-t)^2,
   \qquad
   \frac{\partial L}{\partial y}=y-t.
 \]
-If \(y=0.3\) and \(t=1\), then \(\partial L/\partial y=-0.7\).  If \(y=0.7\) and \(t=0\), then \(\partial L/\partial y=+0.7\).  Activations describe the current coordinates; gradients describe which infinitesimal direction increases the loss.
+If \(y=0.3\) and \(t=1\), then \(\partial L/\partial y=-0.7\).  If \(y=0.7\) and \(t=0\), then \(\partial L/\partial y=+0.7\).  Activations describe the current numerical state; gradients describe which infinitesimal direction increases the loss.
 
-For a hidden neuron, the incoming upstream gradient is itself a weighted combination of downstream errors, so it can again have either sign.  What positivity of \(h_j\) does is not fix the sign of the scalar \(\delta\); it makes \emph{all weight-gradient components inherit the same sign from that scalar} for a single example.
+For a hidden neuron, the upstream gradient is itself a weighted combination of downstream error signals, so it can again have either sign.  Positivity of the incoming \(h_j\)'s does not fix the sign of \(\delta\); rather, it makes \emph{all incoming-weight gradient components inherit the same sign from that one scalar} for a single example.
 
 \section{The zig-zag phenomenon}
 
-Stanford CS231n makes the sign restriction geometrically intuitive.  Consider only two weights, \(w_1,w_2\).  With positive hidden inputs \(h_1,h_2>0\), the per-example gradient satisfies
+Stanford CS231n makes the sign restriction geometrically intuitive.  Consider only two incoming weights, \(w_1,w_2\), of the current neuron.  With positive hidden inputs \(h_1,h_2>0\), the per-example gradient is
 \[
-  \nabla_w L=\delta(h_1,h_2).
+  \nabla_{\mathbf w}L
+  =\delta\cdot\mathbf h
+  =\delta\cdot
+  \begin{pmatrix}h_1\\h_2\end{pmatrix}.
 \]
-Hence the gradient, and therefore the negative-gradient update, must lie in one of two opposite quadrants: both components have the same sign.
+Hence the gradient must have same-sign components.  The gradient-descent update
+\[
+  \Delta\mathbf w=-\eta\,\nabla_{\mathbf w}L
+\]
+has the opposite signs, but still has same-sign components; it therefore also lies in one of the same two opposite quadrants.
 
 \begin{figure}[htbp]
 \centering
@@ -247,12 +363,12 @@ Hence the gradient, and therefore the negative-gradient update, must lie in one 
   % Start, target, and desired mixed-sign net displacement.
   \coordinate (O) at (-3.15,2.45);
   \coordinate (T) at (2.90,-2.30);
-  \fill (O) circle (2.2pt) node[above left=2pt] {current $w$};
+  \fill (O) circle (2.2pt) node[above left=2pt] {current $\mathbf w$};
   \fill[accent] (T) circle (2.5pt);
   \node[accent,align=left,anchor=west] at (3.05,-2.38) {desired\\region};
   \draw[dashed,thick,accent,->] (O)--(T);
   \node[accent,align=center,fill=white,inner sep=2pt] at (-2.05,-2.15)
-    {dashed arrow = desired net change\\$\Delta w=(+,-)$};
+    {dashed arrow = desired net change\\$\Delta\mathbf w=(+,-)$};
 
   % A deliberately constructed zig-zag.  Every individual displacement
   % is either (+,+) (northeast, quadrant I as a vector) or (-,-)
@@ -281,7 +397,7 @@ Hence the gradient, and therefore the negative-gradient update, must lie in one 
         {allowed per-example updates\\
          $\nearrow\ (+,+)$ \quad or \quad $\swarrow\ (-,-)$};
 \end{tikzpicture}
-\caption{Corrected schematic of the CS231n ``zig-zag'' intuition.  The blue arrows are gradient-descent updates, $\Delta w=-\eta\nabla_w L$.  Every individual blue arrow has same-sign components---it points northeast $(+,+)$ or southwest $(-,-)$ relative to its own tail.  Nevertheless, alternating such steps can accumulate to the mixed-sign net displacement indicated by the dashed red arrow.  The picture is illustrative, not a literal trajectory for every loss surface.}
+\caption{Corrected schematic of the CS231n ``zig-zag'' intuition.  The blue arrows are gradient-descent updates, $\Delta\mathbf w=-\eta\nabla_{\mathbf w} L$.  Every individual blue arrow has same-sign components---it points northeast $(+,+)$ or southwest $(-,-)$ relative to its own tail.  Nevertheless, alternating such steps can accumulate to the mixed-sign net displacement indicated by the dashed red arrow.  The picture is illustrative, not a literal trajectory for every loss surface.}
 \label{fig:zigzag}
 \end{figure}
 
@@ -292,7 +408,7 @@ This argument should be interpreted carefully:
   \item It is sharpest for a \emph{single training example} or stochastic-gradient step.
   \item With a minibatch, gradients are sums
   \[
-    \frac{\partial L}{\partial w_j}=\sum_i \delta_i h_{ij},
+    \frac{\partial L}{\partial w_j}=\sum_i \delta_i\cdot h_{ij},
   \]
   and different examples can partially cancel.  Stanford explicitly notes that minibatches help.
   \item The argument is an optimization heuristic, not a proof that every positive activation causes slow training.
@@ -494,13 +610,14 @@ For two otherwise equivalent monotone S-shaped hidden activations that differ ma
 A useful summary is:
 \begin{equation}
 \boxed{
-\begin{array}{c}
-\text{same function class}\\
-+\ \text{same derivative shape}\\
-+\ \text{following bias}\\[3pt]
-\Longrightarrow\\[-2pt]
-\text{centering mainly changes optimization geometry, not expressivity.}
-\end{array}}
+\begin{gathered}
+\bigl(\text{same function class}\bigr)
+\;\land\;
+\bigl(\text{same derivative shape}\bigr)\\[-1pt]
+\land\;\bigl(\text{following-layer bias}\bigr)\\[4pt]
+\Downarrow\\[-1pt]
+\text{centering changes optimization geometry, not expressivity}
+\end{gathered}}
 \end{equation}
 
 The most important benefits are:
