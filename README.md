@@ -104,6 +104,22 @@ expands on — its activation-functions section is where the "not zero-centered 
 gradient argument are introduced. Third-party course material, retained here for reference and not
 covered by this repository's license.
 
+### Why Average Minibatch Loss Can Increase in SGD
+**Folder**: `minibatch-loss/`
+**Files**: `minibatch_loss_article.tex`, `minibatch_loss_article.pdf`
+
+A short article on why the training loss reported each epoch under minibatch SGD can rise from
+one epoch to the next, even with a sensible learning rate and a normally behaving optimizer. The
+apparent contradiction with "gradient descent reduces the loss" is resolved by looking at what the
+reported number actually measures. Covers:
+
+- Why, with fixed weights, the average minibatch loss equals the full-dataset loss
+- Why the reported epoch loss instead averages minibatch losses evaluated at a different parameter vector after every update, so it is not the full-dataset loss at any single point
+- Why a minibatch gradient only estimates the full gradient, so an update can raise the loss on other examples, and reshuffling changes the path each epoch
+- What the descent guarantee of full-batch gradient descent does and does not cover
+
+**Key concepts**: Stochastic gradient descent, minibatches, epoch loss, full-batch vs. stochastic gradients, training-loss curves
+
 ## Future Directions
 
 - Extension to other Platonic solids
