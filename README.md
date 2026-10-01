@@ -120,6 +120,24 @@ reported number actually measures. Covers:
 
 **Key concepts**: Stochastic gradient descent, minibatches, epoch loss, full-batch vs. stochastic gradients, training-loss curves
 
+### A Structured, Adjustable-View Medium for Scientific Code
+**Folder**: `adjustable-view-medium/`
+**Files**: `adjustable_view_whitepaper.tex`, `adjustable_view_whitepaper.pdf`
+
+A design whitepaper (working draft) distilling requirements for a scientific-computing environment
+in which a program is stored as structure — essentially its parse tree — rather than flat text, and
+its on-screen appearance is a reader-adjustable view that can never change what the program
+computes. Covers:
+
+- The foundational commitment: meaning is stored once, appearance is generated on demand, and top-level definitions live in an unordered database rather than files
+- The rules that keep the system honest: view changes and program edits are never the same action, invented notation must label itself, layouts must be data-determined or safely reversible, and hiding must leave a visible trace
+- Features and their limits: hiding detail by category with named, shareable views; textbook layout for fractions, vectors, matrices, and small tensors; reversible two-dimensional layouts for `if`-statements; structure-anchored cursors; bordered operator chains restricted to associative operators
+- Why vector orientation is a meaning property ($V \neq V^{\mathsf{T}}$), so transposition is an explicit edit rather than a view flip
+- Hand-drawn graph constants as the one deliberate exception where the author fixes appearance
+- Decisions postponed for a first prototype, and open questions — above all what a hidden item leaves behind and whether editing feels fast
+
+**Key concepts**: Projectional/structure editors, programming-environment design, mathematical notation in code, view vs. meaning separation, human factors, prototyping scope
+
 ## Future Directions
 
 - Extension to other Platonic solids
