@@ -138,6 +138,23 @@ computes. Covers:
 
 **Key concepts**: Projectional/structure editors, programming-environment design, mathematical notation in code, view vs. meaning separation, human factors, prototyping scope
 
+### CBOW: The Connections Change, but the Weights Persist
+**Folder**: `cbow-embeddings/`
+**Files**: `cbow_dynamic_connections.tex`, `cbow_dynamic_connections.pdf`
+
+A five-page set of TikZ explainer slides on Continuous Bag of Words (word2vec CBOW) training,
+aimed at a common confusion: each context window seems to "rewire" the network, yet the model's
+parameters are fixed tables that persist between samples. Covers:
+
+- Two consecutive training samples selecting different rows of the same embedding table $W_{\rm in}$, with the shared output layer $W_{\rm out}$ reused unchanged
+- A worked numerical example showing the context average is taken coordinate by coordinate, giving a $d$-vector rather than a scalar
+- Why backpropagation sends $\tfrac{1}{C}\,\partial L/\partial h$ to each selected embedding row and nothing to unused rows
+- The matrix form with seven context words: a binary selection vector $\boldsymbol s$, averaging as the scale factor $1/C$, and the sparse outer-product gradient $\partial L/\partial W_{\rm in} = \boldsymbol b^{\mathsf T}\boldsymbol g$
+- CBOW as multinomial logistic regression with a low-rank weight matrix $M = W_{\rm in}W_{\rm out}^{\mathsf T}$, $\operatorname{rank}(M)\le d$
+- The encoder/decoder reading, and why the embedding table is kept after training while the prediction head is usually thrown away
+
+**Key concepts**: Word embeddings, word2vec, CBOW, embedding lookup as one-hot matrix multiplication, sparse gradients, softmax classification, low-rank factorization
+
 ## Future Directions
 
 - Extension to other Platonic solids
