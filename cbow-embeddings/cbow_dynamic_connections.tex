@@ -30,6 +30,16 @@
   target/.style={draw=pink,fill=palepink,rounded corners=5pt,align=center,minimum width=2.6cm,minimum height=1.0cm},
 }
 
+% Hidden vector drawn inline as a strip of d coordinates: \hvector{x}{y}
+\newcommand{\hvector}[2]{%
+  \foreach \lbl [count=\i from 0] in {h_1,h_2,\cdots,h_d}{
+    \filldraw[draw=violet,fill=paleviolet,line width=.7pt]
+      ({#1-1.3+0.65*\i},{#2-0.25}) rectangle ++(0.65,0.50);
+    \node[font=\small] at ({#1-0.975+0.65*\i},#2) {$\lbl$};
+  }
+  \node[font=\normalsize,text=violet] at (#1,#2+0.62) {$\boldsymbol h\in\mathbb{R}^d$};
+}
+
 \begin{document}
 \begin{tikzpicture}[x=1cm,y=1cm,font=\sffamily,text=ink]
 
@@ -68,14 +78,14 @@
 \node[anchor=east,font=\scriptsize,text=teal] at (8.63,13.33) {selected};
 
 \node[avg] (avgA) at (12.3,13.91) {\textbf{Average}\\$\displaystyle h=\frac{e_{\rm cat}+e_{\rm on}}{2}$};
-\node[stage] (hA) at (16.6,13.91) {$h\in\mathbb{R}^d$};
 \node[classifier] (outA) at (20.75,13.91) {$W_{\rm out}$\\\scriptsize dense weights};
 \node[stage] (softA) at (25.04,13.91) {Softmax};
 \node[target] (targetA) at (29.36,13.91) {$P(\mathrm{sat}\mid h)$\\\scriptsize loss vs. target};
 \draw[linkA] (8.9,14.92) -- (avgA.west);
 \draw[linkA] (8.9,13.33) -- (avgA.west);
-\draw[flow] (avgA.east) -- (hA.west);
-\draw[flow] (hA.east) -- (outA.west);
+\hvector{16.6}{13.91}
+\draw[flow] (avgA.east) -- (15.25,13.91);
+\draw[flow] (17.95,13.91) -- (outA.west);
 \draw[flow] (outA.east) -- (softA.west);
 \draw[flow] (softA.east) -- (targetA.west);
 \node[anchor=north,font=\small,text=muted] at (12.3,12.98) {Fixed coefficients, no trainable weights};
@@ -141,14 +151,14 @@
 \node[anchor=east,font=\scriptsize,text=blue] at (8.63,4.73) {selected};
 
 \node[avg] (avgB) at (12.3,5.84) {\textbf{Average}\\$\displaystyle h=\frac{e_{\rm dog}+e_{\rm in}}{2}$};
-\node[stage] (hB) at (16.6,5.84) {$h\in\mathbb{R}^d$};
 \node[classifier] (outB) at (20.75,5.84) {$W_{\rm out}$\\\scriptsize same layer};
 \node[stage] (softB) at (25.04,5.84) {Softmax};
 \node[target] (targetB) at (29.36,5.84) {$P(\mathrm{sat}\mid h)$\\\scriptsize new loss};
 \draw[linkB] (8.9,6.32) -- (avgB.west);
 \draw[linkB] (8.9,4.73) -- (avgB.west);
-\draw[flow] (avgB.east) -- (hB.west);
-\draw[flow] (hB.east) -- (outB.west);
+\hvector{16.6}{5.84}
+\draw[flow] (avgB.east) -- (15.25,5.84);
+\draw[flow] (17.95,5.84) -- (outB.west);
 \draw[flow] (outB.east) -- (softB.west);
 \draw[flow] (softB.east) -- (targetB.west);
 \node[anchor=north,font=\small,text=muted] at (12.3,4.91) {Again, a fixed average};
@@ -644,14 +654,14 @@
 \node[anchor=east,font=\scriptsize,text=teal] at (8.63,13.86) {selected};
 
 \node[avg] (sgCopyA) at (12.3,13.86) {\textbf{Copy}\\$h=e_{\rm sat}$};
-\node[stage] (sgHA) at (16.6,13.86) {$h\in\mathbb{R}^d$};
 \node[classifier] (sgOutA) at (20.75,13.86) {$W_{\rm out}$\\\scriptsize dense weights};
 \node[stage] (sgSoftA) at (25.04,13.86) {Softmax\\\scriptsize one $p$ over $V$};
 \node[target,minimum height=0.9cm] (sgTA1) at (29.36,14.58) {$P(\mathrm{cat}\mid\mathrm{sat})$};
 \node[target,minimum height=0.9cm] (sgTA2) at (29.36,13.14) {$P(\mathrm{on}\mid\mathrm{sat})$};
 \draw[linkA] (8.9,13.86) -- (sgCopyA.west);
-\draw[flow] (sgCopyA.east) -- (sgHA.west);
-\draw[flow] (sgHA.east) -- (sgOutA.west);
+\hvector{16.6}{13.86}
+\draw[flow] (sgCopyA.east) -- (15.25,13.86);
+\draw[flow] (17.95,13.86) -- (sgOutA.west);
 \draw[flow] (sgOutA.east) -- (sgSoftA.west);
 \draw[flow] (sgSoftA.east) -- (sgTA1.west);
 \draw[flow] (sgSoftA.east) -- (sgTA2.west);
@@ -712,14 +722,14 @@
 \node[anchor=east,font=\scriptsize,text=blue] at (8.63,5.26) {selected};
 
 \node[avg] (sgCopyB) at (12.3,5.79) {\textbf{Copy}\\$h=e_{\rm on}$};
-\node[stage] (sgHB) at (16.6,5.79) {$h\in\mathbb{R}^d$};
 \node[classifier] (sgOutB) at (20.75,5.79) {$W_{\rm out}$\\\scriptsize same layer};
 \node[stage] (sgSoftB) at (25.04,5.79) {Softmax\\\scriptsize one $p$ over $V$};
 \node[target,minimum height=0.9cm] (sgTB1) at (29.36,6.51) {$P(\mathrm{sat}\mid\mathrm{on})$};
 \node[target,minimum height=0.9cm] (sgTB2) at (29.36,5.07) {$P(\mathrm{mat}\mid\mathrm{on})$};
 \draw[linkB] (8.9,5.26) -- (sgCopyB.west);
-\draw[flow] (sgCopyB.east) -- (sgHB.west);
-\draw[flow] (sgHB.east) -- (sgOutB.west);
+\hvector{16.6}{5.79}
+\draw[flow] (sgCopyB.east) -- (15.25,5.79);
+\draw[flow] (17.95,5.79) -- (sgOutB.west);
 \draw[flow] (sgOutB.east) -- (sgSoftB.west);
 \draw[flow] (sgSoftB.east) -- (sgTB1.west);
 \draw[flow] (sgSoftB.east) -- (sgTB2.west);
