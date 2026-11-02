@@ -142,10 +142,11 @@ computes. Covers:
 **Folder**: `cbow-embeddings/`
 **Files**: `cbow_dynamic_connections.tex`, `cbow_dynamic_connections.pdf`
 
-An eight-page set of TikZ explainer slides on Continuous Bag of Words (word2vec CBOW) training, with a Skip-gram companion,
+A nine-page set of TikZ explainer slides on Continuous Bag of Words (word2vec CBOW) training, with a Skip-gram companion,
 aimed at a common confusion: each context window seems to "rewire" the network, yet the model's
 parameters are fixed tables that persist between samples. Covers:
 
+- An opening setup slide: a toy token stream, its vocabulary (one row of $W_{\rm in}$ per word), and a radius-1 window sliding one token at a time, producing the two samples traced on the next slide
 - Two consecutive training samples selecting different rows of the same embedding table $W_{\rm in}$, with the shared output layer $W_{\rm out}$ reused unchanged
 - A worked numerical example showing the context average is taken coordinate by coordinate, giving a $d$-vector rather than a scalar
 - Why backpropagation sends $\tfrac{1}{C}\,\partial L/\partial h$ to each selected embedding row and nothing to unused rows
