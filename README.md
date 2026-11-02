@@ -142,7 +142,7 @@ computes. Covers:
 **Folder**: `cbow-embeddings/`
 **Files**: `cbow_dynamic_connections.tex`, `cbow_dynamic_connections.pdf`
 
-A five-page set of TikZ explainer slides on Continuous Bag of Words (word2vec CBOW) training,
+An eight-page set of TikZ explainer slides on Continuous Bag of Words (word2vec CBOW) training, with a Skip-gram companion,
 aimed at a common confusion: each context window seems to "rewire" the network, yet the model's
 parameters are fixed tables that persist between samples. Covers:
 
@@ -152,8 +152,11 @@ parameters are fixed tables that persist between samples. Covers:
 - The matrix form with seven context words: a binary selection vector $\boldsymbol s$, averaging as the scale factor $1/C$, and the sparse outer-product gradient $\partial L/\partial W_{\rm in} = \boldsymbol b^{\mathsf T}\boldsymbol g$
 - CBOW as multinomial logistic regression with a low-rank weight matrix $M = W_{\rm in}W_{\rm out}^{\mathsf T}$, $\operatorname{rank}(M)\le d$
 - The encoder/decoder reading, and why the embedding table is kept after training while the prediction head is usually thrown away
+- Skip-gram as the mirror image: one center-word row is copied (no averaging) and must predict each context word, so the center row receives the sum of all $C$ gradient signals
+- Skip-gram in matrix form, $\boldsymbol p=\operatorname{softmax}(\boldsymbol xW_{\rm in}W_{\rm out}^{\mathsf T})$ with a one-hot input, and its loss gradient $\partial L/\partial\boldsymbol z = C\boldsymbol p-\sum_j \boldsymbol y_{c_j}$
+- A side-by-side CBOW vs. Skip-gram comparison: same low-rank factorization, different input vector, and the usual intuition for why Skip-gram helps rare words
 
-**Key concepts**: Word embeddings, word2vec, CBOW, embedding lookup as one-hot matrix multiplication, sparse gradients, softmax classification, low-rank factorization
+**Key concepts**: Word embeddings, word2vec, CBOW, Skip-gram, embedding lookup as one-hot matrix multiplication, sparse gradients, softmax classification, low-rank factorization
 
 ## Future Directions
 
