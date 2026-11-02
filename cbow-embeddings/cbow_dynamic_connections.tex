@@ -189,8 +189,8 @@
 \node[classifier] (outA) at (20.75,13.91) {$W_{\rm out}$\\\scriptsize dense weights};
 \node[stage] (softA) at (25.04,13.91) {Softmax};
 \node[target] (targetA) at (29.36,13.91) {$P(\mathrm{sat}\mid h)$\\\scriptsize loss vs. target};
-\draw[linkA] (8.9,14.92) -- (avgA.west);
-\draw[linkA] (8.9,13.33) -- (avgA.west);
+\draw[linkA] (8.9,14.92) -- ([yshift=3.2mm]avgA.west);
+\draw[linkA] (8.9,13.33) -- ([yshift=-3.2mm]avgA.west);
 \hvector{16.6}{13.91}
 \draw[flow] (avgA.east) -- (15.25,13.91);
 \draw[flow] (17.95,13.91) -- (outA.west);
@@ -262,8 +262,8 @@
 \node[classifier] (outB) at (20.75,5.84) {$W_{\rm out}$\\\scriptsize same layer};
 \node[stage] (softB) at (25.04,5.84) {Softmax};
 \node[target] (targetB) at (29.36,5.84) {$P(\mathrm{sat}\mid h)$\\\scriptsize new loss};
-\draw[linkB] (8.9,6.32) -- (avgB.west);
-\draw[linkB] (8.9,4.73) -- (avgB.west);
+\draw[linkB] (8.9,6.32) -- ([yshift=3.2mm]avgB.west);
+\draw[linkB] (8.9,4.73) -- ([yshift=-3.2mm]avgB.west);
 \hvector{16.6}{5.84}
 \draw[flow] (avgB.east) -- (15.25,5.84);
 \draw[flow] (17.95,5.84) -- (outB.west);
@@ -274,14 +274,198 @@
 
 % Takeaway strip
 \filldraw[draw=teal!65,fill=selectA,rounded corners=7pt] (0.7,0.68) rectangle (31.9,3.28);
-\node[anchor=west,font=\bfseries\large] at (1.2,2.73) {The MLP interpretation};
+\node[anchor=west,font=\bfseries\large] at (1.2,2.73) {Key idea};
 \node[anchor=west,font=\normalsize] at (1.2,2.13)
-  {Each word is a one-hot vector $x_w$. The embedding lookup is just $e_w=W_{\rm in}^{T}x_w$.};
-\node[anchor=west,font=\normalsize] at (1.2,1.56)
-  {The apparent ``rewiring'' is sparse row selection, not a change in the model architecture.};
+  {The apparent ``rewiring'' is sparse row selection from a persistent table, not a change in the model architecture.};
+\node[anchor=west,font=\normalsize,text=muted] at (1.2,1.56)
+  {Next slide: the MLP interpretation, point by point.};
 \node[anchor=west,font=\bfseries\normalsize,text=teal] at (1.2,1.02)
   {Only the active input embeddings change per sample; both parameter tables remain stored and trainable.};
 
+\end{tikzpicture}
+
+
+
+% ============ MLP INTERPRETATION SLIDE (follows slide 1) ============
+\tikzset{
+  neuron/.style={circle,draw=ink,fill=white,minimum size=0.46cm,inner sep=0pt,line width=.6pt},
+  sneuron/.style={circle,draw=ink,fill=white,minimum size=0.36cm,inner sep=0pt,line width=.5pt},
+  wire/.style={draw=ink!30,line width=.45pt},
+  cell/.style={draw=line,fill=white,minimum width=1.25cm,minimum height=0.46cm,inner sep=0pt,font=\small},
+}
+\begin{tikzpicture}[x=1cm,y=1cm,font=\sffamily,text=ink]
+\fill[white] (0,0) rectangle (32.6,19.1);
+\node[anchor=west,font=\bfseries\LARGE] at (1,18.45)
+  {The MLP interpretation, point by point};
+\node[anchor=west,text=muted,font=\normalsize] at (1,17.83)
+  {CBOW is a small neural network. Comparing it with a standard MLP and with CNN pooling shows what is the same, what only looks different, and what is borrowed.};
+
+% --- Panel 1: a word is its index ---
+\filldraw[fill=panelbg,draw=line,rounded corners=9pt] (0.7,13.95) rectangle (31.9,17.25);
+\node[anchor=west,font=\bfseries\large] at (1.2,16.80) {1. The string never trains: a word \emph{is} its index};
+
+\node[font=\scriptsize,text=muted] at (2.35,16.12) {string};
+\node[box,font=\ttfamily\bfseries,minimum width=1.9cm,minimum height=0.65cm] (pS) at (2.35,15.40) {"sat"};
+\node[box,font=\large\bfseries,draw=ink,minimum width=1.0cm,minimum height=0.65cm] (pI) at (8.05,15.40) {3};
+\node[font=\scriptsize,text=muted] at (8.05,16.12) {index};
+\draw[flow] (pS.east) -- (pI.west)
+  node[pos=0.43,above,font=\scriptsize] {vocabulary dictionary}
+  node[pos=0.43,below,font=\scriptsize,text=muted] {fixed, built once};
+\foreach \v [count=\k from 0] in {0,0,1,0,0,0}{
+  \pgfmathsetmacro{\xx}{9.75+0.55*\k}
+  \ifnum\v=1
+    \filldraw[draw=teal,fill=selectA] (\xx,15.12) rectangle ++(0.55,0.56);
+  \else
+    \filldraw[draw=line,fill=white] (\xx,15.12) rectangle ++(0.55,0.56);
+  \fi
+  \node[font=\small] at (\xx+0.275,15.40) {\v};
+}
+\node[font=\scriptsize,text=muted] at (11.40,16.12) {one-hot $x_{\rm sat}$, $1\times V$};
+\draw[flow] (pI.east) -- (9.70,15.40);
+\foreach \k in {0,...,5}{
+  \pgfmathsetmacro{\yy}{15.95-0.22*\k}
+  \ifnum\k=2
+    \filldraw[draw=teal,fill=selectA] (14.60,\yy-0.11) rectangle (17.40,\yy+0.11);
+  \else
+    \filldraw[draw=line,fill=white] (14.60,\yy-0.11) rectangle (17.40,\yy+0.11);
+  \fi
+}
+\node[font=\scriptsize,text=muted] at (16.00,16.30) {$W_{\rm in}$};
+\node[anchor=west,font=\scriptsize,text=teal] at (17.45,15.51) {row 3 $=e_{\rm sat}$};
+\draw[flow] (13.10,15.40) -- (14.55,15.40);
+\node[font=\scriptsize] at (13.83,15.62) {$x\,W_{\rm in}$};
+\draw[draw=pink,dashed,line width=1pt] (7.20,14.20) -- (7.20,16.35);
+\node[anchor=west,font=\scriptsize,text=pink] at (7.35,14.25) {training only ever sees what is right of this line: numbers};
+
+\node[anchor=west,font=\small] at (19.70,16.20)
+  {The string is a lookup key, used once, before training.};
+\node[anchor=west,font=\small] at (19.70,15.62)
+  {No gradient reaches the spelling; the dictionary is not trained.};
+\node[anchor=west,font=\small] at (19.70,15.04)
+  {Rename every ``sat'' to ``w3'': the run is identical, number for number.};
+\node[anchor=west,font=\small,text=muted] at (19.70,14.46)
+  {Spelling carries no meaning: ``cat'' and ``cart'' get unrelated rows.};
+
+% --- Panel 2: standard MLP ---
+\filldraw[fill=panelbg,draw=line,rounded corners=9pt] (0.7,6.00) rectangle (10.55,13.65);
+\node[anchor=west,font=\bfseries\large] at (1.2,13.18) {2. A standard MLP};
+\foreach \w [count=\i from 0] in {cat,dog,sat,on,in,mat}{
+  \pgfmathsetmacro{\yy}{12.25-0.80*\i}
+  \node[neuron] (mi\i) at (2.55,\yy) {};
+  \node[anchor=east,font=\scriptsize] at (2.20,\yy) {\w};
+  \node[neuron] (mo\i) at (8.75,\yy) {};
+  \node[anchor=west,font=\scriptsize,text=muted] at (9.05,\yy) {$z_{\rm \w}$};
+}
+\foreach \j in {0,1,2}{
+  \pgfmathsetmacro{\yy}{11.05-0.80*\j}
+  \node[neuron,draw=violet] (mh\j) at (5.65,\yy) {};
+}
+\foreach \i in {0,...,5}{\foreach \j in {0,1,2}{
+  \draw[wire] (mi\i) -- (mh\j);
+  \draw[wire] (mh\j) -- (mo\i);
+}}
+\node[font=\scriptsize] at (4.10,12.72) {$W_{\rm in}$};
+\node[font=\scriptsize] at (7.20,12.72) {$W_{\rm out}^{T}$};
+\node[font=\scriptsize,text=muted,align=center] at (2.55,7.55) {input $x$\\all $V$ units};
+\node[font=\scriptsize,text=violet,align=center] at (5.65,7.55) {hidden $h$\\$\sigma(xW{+}c)$};
+\node[font=\scriptsize,text=muted,align=center] at (8.75,7.55) {output $z$\\+ softmax};
+\node[anchor=west,font=\small] at (1.20,6.78) {Fixed wiring: every input unit exists};
+\node[anchor=west,font=\small] at (1.20,6.38) {on every step; only input \emph{values} change.};
+
+% --- Panel 3: CBOW, swapping the input layer ---
+\filldraw[fill=panelbg,draw=line,rounded corners=9pt] (10.85,6.00) rectangle (31.9,13.65);
+\node[anchor=west,font=\bfseries\large] at (11.35,13.18) {3. CBOW: as if the input layer were swapped each step};
+
+\foreach \xo/\col/\fil/\wa/\wb/\lab in {11.6/teal/selectA/cat/on/A, 22.6/blue/selectB/dog/in/B}{
+  \filldraw[draw=\col,fill=white,line width=1.1pt,rounded corners=5pt] (\xo+0.15,9.35) rectangle (\xo+2.35,12.15);
+  \node[font=\small\bfseries,text=\col] at (\xo+1.25,12.55) {input: sample \lab};
+  \node[neuron,draw=\col,fill=\fil] (ci1\lab) at (\xo+1.85,11.35) {};
+  \node[neuron,draw=\col,fill=\fil] (ci2\lab) at (\xo+1.85,10.15) {};
+  \node[anchor=east,font=\small\bfseries,text=\col] at (\xo+1.50,11.35) {\wa};
+  \node[anchor=east,font=\small\bfseries,text=\col] at (\xo+1.50,10.15) {\wb};
+  \filldraw[draw=violet,fill=paleviolet,rounded corners=5pt] (\xo+3.60,9.35) rectangle (\xo+4.90,12.15);
+  \node[font=\small,text=violet] at (\xo+4.25,12.55) {avg pool};
+  \foreach \j in {0,1,2}{
+    \node[neuron,draw=violet] (ch\j\lab) at (\xo+4.25,11.50-0.75*\j) {};
+    \draw[draw=\col,line width=1.1pt] (ci1\lab) -- (ch\j\lab);
+    \draw[draw=\col,line width=1.1pt] (ci2\lab) -- (ch\j\lab);
+  }
+  \foreach \k in {0,...,5}{
+    \node[sneuron] (co\k\lab) at (\xo+7.20,12.00-0.55*\k) {};
+    \foreach \j in {0,1,2}{\draw[wire] (ch\j\lab) -- (co\k\lab);}
+  }
+  \node[font=\small,text=muted] at (\xo+7.20,12.55) {output};
+  \node[font=\scriptsize,text=\col] at (\xo+2.40,8.90) {edge weights = rows $e_{\rm \wa}$, $e_{\rm \wb}$ of $W_{\rm in}$};
+  \node[font=\scriptsize,text=muted] at (\xo+7.20,8.90) {same $W_{\rm out}$};
+}
+\draw[->,draw=muted,dashed,line width=1.3pt] (19.35,10.75) -- (22.45,10.75);
+\node[font=\scriptsize,text=muted,align=center] at (20.90,11.40) {next step:\\swap the card};
+\node[font=\scriptsize,text=muted,align=center] at (20.90,10.10) {rest of the\\network stays};
+
+\node[anchor=west,font=\small] at (11.35,8.22)
+  {It looks as if each step plugs in a new input layer with only $C$ units, wired to the same pooling and output layers.};
+\node[anchor=west,font=\small] at (11.35,7.66)
+  {Why only ``almost'': the plugged-in weights are not new. They are rows of the persistent $W_{\rm in}$, written back after SGD.};
+\node[anchor=west,font=\small,text=muted] at (11.35,7.10)
+  {Exact view: the full MLP of panel 2 with input $b=s/C$. Inactive inputs are 0, so their wires carry nothing};
+\node[anchor=west,font=\small,text=muted] at (11.35,6.56)
+  {and receive no gradient. Hiding those idle units is what makes it look like the input layer was replaced.};
+
+% --- Panel 4: averaging = average pooling, as in CNNs ---
+\filldraw[draw=pink!55,fill=palepink,rounded corners=8pt] (0.7,0.68) rectangle (31.9,5.70);
+\node[anchor=west,font=\bfseries\large] at (1.2,5.25)
+  {4. The averaging stage is average pooling, the same tool you met in CNNs};
+\node[anchor=east,font=\small,text=muted] at (31.40,5.25)
+  {not an MLP layer: no weights, no activation};
+
+% (a) CNN refresher
+\node[anchor=west,font=\bfseries\small] at (1.30,4.55) {Recall: $2\times2$ pooling in a CNN};
+\foreach \v/\c/\r in {1/0/0,3/1/0,2/0/1,6/1/1}{
+  \node[cell,minimum width=0.62cm,minimum height=0.62cm] at (2.20+0.62*\c,3.65-0.62*\r) {\v};
+}
+\node[font=\scriptsize,text=muted] at (2.51,2.40) {one window};
+\draw[flow] (3.25,3.55) -- (4.55,3.90);
+\draw[flow] (3.25,3.20) -- (4.55,2.85);
+\node[anchor=west,font=\small] at (4.65,3.90) {max pool $\rightarrow$ \textbf{6}};
+\node[anchor=west,font=\small] at (4.65,2.85) {avg pool $\rightarrow$ \textbf{3}};
+\node[anchor=west,font=\scriptsize,text=muted] at (1.30,1.95) {GAP: avg pool over the whole map, per channel};
+\draw[draw=pink!35,line width=.7pt] (9.85,1.80) -- (9.85,4.75);
+
+% (b) CBOW as avg pooling across words, per coordinate (numbers from the numerical slide)
+\node[anchor=west,font=\bfseries\small] at (10.20,4.55) {CBOW: pool over the window's words, coordinate by coordinate};
+\foreach \lbl/\a/\b/\c/\yy/\sty in {
+  {$e_{\rm cat}$}/0.218/-1.572/0.294/3.95/0,
+  {$e_{\rm on}$}/-0.418/0.732/1.106/3.43/0,
+  {avg pool $=h$}/-0.100/-0.420/0.700/2.80/1,
+  {max pool}/0.218/0.732/1.106/2.28/2}
+{
+  \ifcase\sty
+    \node[anchor=west,font=\small\bfseries] at (10.30,\yy) {\lbl};
+    \foreach \v [count=\k from 0] in {\a,\b,{\cdots},\c}{\node[cell] at (13.90+1.25*\k,\yy) {$\v$};}
+  \or
+    \node[anchor=west,font=\small\bfseries,text=violet] at (10.30,\yy) {\lbl};
+    \foreach \v [count=\k from 0] in {\a,\b,{\cdots},\c}{\node[cell,draw=violet,fill=paleviolet] at (13.90+1.25*\k,\yy) {$\v$};}
+  \or
+    \node[anchor=west,font=\small,text=muted] at (10.30,\yy) {\lbl};
+    \foreach \v [count=\k from 0] in {\a,\b,{\cdots},\c}{\node[cell,dashed,text=muted] at (13.90+1.25*\k,\yy) {$\v$};}
+  \fi
+}
+\draw[draw=violet,line width=.7pt] (13.20,3.13) -- (18.40,3.13);
+\node[anchor=west,font=\scriptsize,text=muted] at (18.65,2.28) {not used by CBOW};
+\node[anchor=west,font=\scriptsize,text=muted] at (18.65,3.69) {a window of};
+\node[anchor=west,font=\scriptsize,text=muted] at (18.65,3.40) {$C=2$ ``positions''};
+\draw[draw=pink!35,line width=.7pt] (21.45,1.80) -- (21.45,4.75);
+
+% (c) what carries over, and the one twist
+\node[anchor=west,font=\bfseries\small] at (21.80,4.55) {Carried over from CNN pooling};
+\node[anchor=west,font=\small] at (21.80,3.98) {no trainable parameters, no activation};
+\node[anchor=west,font=\small] at (21.80,3.48) {order-free: positions are forgotten (bag of words)};
+\node[anchor=west,font=\small] at (21.80,2.98) {avg: every input gets $\frac1C\,\partial L/\partial h$};
+\node[anchor=west,font=\small,text=muted] at (21.80,2.48) {(max would feed only the winner, per coordinate)};
+\node[anchor=west,font=\small,text=pink] at (21.80,1.98) {Twist: the pooled inputs are parameters};
+
+\node[anchor=west,font=\bfseries\normalsize,text=teal] at (1.20,1.12)
+  {CBOW mirrors a CNN head: features $\rightarrow$ global average pool $\rightarrow$ linear layer $\rightarrow$ softmax, except its ``features'' are rows of $W_{\rm in}$ themselves.};
 \end{tikzpicture}
 
 
