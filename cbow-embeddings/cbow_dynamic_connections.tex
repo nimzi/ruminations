@@ -610,4 +610,314 @@
 \node[anchor=west,font=\bfseries\normalsize,text=teal] at (1.45,1.10)
   {The prediction network is a training scaffold: the learned embedding dictionary is the lasting product.};
 \end{tikzpicture}
+
+
+
+% ============ PAGE 6: SKIP-GRAM, THE MIRROR IMAGE OF CBOW ============
+\begin{tikzpicture}[x=1cm,y=1cm,font=\sffamily,text=ink]
+\fill[white] (0,0) rectangle (32.6,19.1);
+\node[anchor=west,font=\bfseries\LARGE] at (1,18.45)
+  {Skip-gram: the center word predicts its context};
+\node[anchor=west,text=muted,font=\normalsize] at (1,17.83)
+  {Same two tables as CBOW, opposite direction: ONE input row is looked up, and it must predict EACH surrounding word.};
+
+% --- Panel A ---
+\filldraw[fill=panelbg,draw=line,rounded corners=9pt] (0.7,11.75) rectangle (31.9,17.25);
+\node[anchor=west,font=\bfseries\large] at (1.2,16.78) {1. Forward pass: sample A};
+\node[anchor=west,font=\normalsize] at (11.0,16.78)
+  {center: \textcolor{teal}{\textbf{sat}} \qquad targets: \textbf{cat} \quad \ldots \quad \textbf{on} \qquad (two training pairs)};
+\node[anchor=west,font=\bfseries\normalsize] at (1.5,15.92)
+  {$W_{\mathrm{in}}$: permanent embedding table};
+\node[anchor=west,text=muted,font=\small] at (1.5,15.56) {Only the center word's row is read};
+
+\foreach \word/\symbol/\y in {
+  cat/cat/14.92,dog/dog/14.39,sat/sat/13.86,on/on/13.33,in/in/12.80,mat/mat/12.27}
+{
+  \filldraw[fill=white,draw=line,rounded corners=1.3pt] (1.45,\y-0.23) rectangle (8.90,\y+0.23);
+  \node[anchor=west,font=\small\bfseries] at (1.74,\y) {\word};
+  \node[anchor=west,font=\small] at (4.08,\y) {$\boldsymbol e_{\mathrm{\symbol}}$};
+  \node[anchor=east,text=muted,font=\scriptsize] at (8.63,\y) {trainable vector};
+}
+\filldraw[fill=selectA,draw=teal,rounded corners=1.3pt] (1.45,13.63) rectangle (8.9,14.09);
+\node[anchor=west,font=\small\bfseries] at (1.74,13.86) {sat};
+\node[anchor=west,font=\small] at (4.08,13.86) {$\boldsymbol e_{\mathrm{sat}}$};
+\node[anchor=east,font=\scriptsize,text=teal] at (8.63,13.86) {selected};
+
+\node[avg] (sgCopyA) at (12.3,13.86) {\textbf{Copy}\\$h=e_{\rm sat}$};
+\node[stage] (sgHA) at (16.6,13.86) {$h\in\mathbb{R}^d$};
+\node[classifier] (sgOutA) at (20.75,13.86) {$W_{\rm out}$\\\scriptsize dense weights};
+\node[stage] (sgSoftA) at (25.04,13.86) {Softmax\\\scriptsize one $p$ over $V$};
+\node[target,minimum height=0.9cm] (sgTA1) at (29.36,14.58) {$P(\mathrm{cat}\mid\mathrm{sat})$};
+\node[target,minimum height=0.9cm] (sgTA2) at (29.36,13.14) {$P(\mathrm{on}\mid\mathrm{sat})$};
+\draw[linkA] (8.9,13.86) -- (sgCopyA.west);
+\draw[flow] (sgCopyA.east) -- (sgHA.west);
+\draw[flow] (sgHA.east) -- (sgOutA.west);
+\draw[flow] (sgOutA.east) -- (sgSoftA.west);
+\draw[flow] (sgSoftA.east) -- (sgTA1.west);
+\draw[flow] (sgSoftA.east) -- (sgTA2.west);
+\node[anchor=north,font=\small,text=muted] at (12.3,12.93) {No averaging: a single row};
+\node[anchor=north,font=\small,text=muted] at (20.75,12.93) {Same matrix for every target position};
+
+% --- Gradient strip ---
+\filldraw[draw=pink!55,fill=palepink,rounded corners=7pt]
+  (0.7,9.35) rectangle (31.9,11.62);
+\node[anchor=west,font=\bfseries\normalsize] at (1.2,11.22)
+  {2. Backpropagation / SGD on sample A};
+
+\node[box,draw=teal,fill=selectA,inner sep=3pt,font=\small] (sgGradEmb) at (19.15,11.21)
+  {$e_{\rm sat}$};
+\node[box,inner sep=3pt,font=\small] (sgGradH) at (22.30,11.21) {$h$};
+\node[box,draw=violet,fill=paleviolet,inner sep=3pt,font=\small] (sgGradW) at (25.30,11.21)
+  {$W_{\rm out}$};
+\node[box,draw=pink,fill=palepink,inner sep=3pt,font=\small] (sgGradL) at (29.40,11.21)
+  {$L=L_{\rm cat}+L_{\rm on}$};
+\draw[reverse] (sgGradL.west) -- (sgGradW.east);
+\draw[reverse] (sgGradW.west) -- (sgGradH.east);
+\draw[reverse] (sgGradH.west) -- (sgGradEmb.east);
+
+\node[anchor=north west,font=\normalsize] at (1.2,10.85)
+  {$\displaystyle \frac{\partial L}{\partial e_{\rm sat}}
+                =\frac{\partial L_{\rm cat}}{\partial h}
+                +\frac{\partial L_{\rm on}}{\partial h}$};
+\node[anchor=west,text=muted,font=\small] at (1.2,9.69)
+  {All other input rows (cat, dog, on, in, mat) receive no gradient: here the context words are targets, not inputs.};
+
+\node[anchor=west,font=\bfseries\small,text=pink] at (18.0,10.48)
+  {Parameters updated by SGD:};
+\node[anchor=west,font=\small] at (18.0,10.03)
+  {Center input vector: $e_{\rm sat}$, with the gradient signals of both targets added};
+\node[anchor=west,font=\small] at (18.0,9.62)
+  {Shared output matrix: $W_{\rm out}$};
+
+% --- Panel B ---
+\filldraw[fill=panelbg,draw=line,rounded corners=9pt] (0.7,3.62) rectangle (31.9,9.18);
+\node[anchor=west,font=\bfseries\large] at (1.2,8.71) {3. Slide the window: sample B};
+\node[anchor=west,font=\normalsize] at (11.0,8.71)
+  {center: \textcolor{blue}{\textbf{on}} \qquad targets: \textbf{sat} \quad \ldots \quad \textbf{mat} \qquad (two more training pairs)};
+\node[anchor=west,font=\bfseries\normalsize] at (1.5,7.85)
+  {$W_{\mathrm{in}}$: the same table, now updated};
+\node[anchor=west,text=muted,font=\small] at (1.5,7.49) {A different single row; persistent parameters};
+
+\foreach \word/\symbol/\y in {
+  cat/cat/6.85,dog/dog/6.32,sat/sat/5.79,on/on/5.26,in/in/4.73,mat/mat/4.20}
+{
+  \filldraw[fill=white,draw=line,rounded corners=1.3pt] (1.45,\y-0.23) rectangle (8.90,\y+0.23);
+  \node[anchor=west,font=\small\bfseries] at (1.74,\y) {\word};
+  \node[anchor=west,font=\small] at (4.08,\y) {$\boldsymbol e_{\mathrm{\symbol}}$};
+  \node[anchor=east,text=muted,font=\scriptsize] at (8.63,\y) {trainable vector};
+}
+\filldraw[fill=selectB,draw=blue,rounded corners=1.3pt] (1.45,5.03) rectangle (8.9,5.49);
+\node[anchor=west,font=\small\bfseries] at (1.74,5.26) {on};
+\node[anchor=west,font=\small] at (4.08,5.26) {$\boldsymbol e_{\mathrm{on}}$};
+\node[anchor=east,font=\scriptsize,text=blue] at (8.63,5.26) {selected};
+
+\node[avg] (sgCopyB) at (12.3,5.79) {\textbf{Copy}\\$h=e_{\rm on}$};
+\node[stage] (sgHB) at (16.6,5.79) {$h\in\mathbb{R}^d$};
+\node[classifier] (sgOutB) at (20.75,5.79) {$W_{\rm out}$\\\scriptsize same layer};
+\node[stage] (sgSoftB) at (25.04,5.79) {Softmax\\\scriptsize one $p$ over $V$};
+\node[target,minimum height=0.9cm] (sgTB1) at (29.36,6.51) {$P(\mathrm{sat}\mid\mathrm{on})$};
+\node[target,minimum height=0.9cm] (sgTB2) at (29.36,5.07) {$P(\mathrm{mat}\mid\mathrm{on})$};
+\draw[linkB] (8.9,5.26) -- (sgCopyB.west);
+\draw[flow] (sgCopyB.east) -- (sgHB.west);
+\draw[flow] (sgHB.east) -- (sgOutB.west);
+\draw[flow] (sgOutB.east) -- (sgSoftB.west);
+\draw[flow] (sgSoftB.east) -- (sgTB1.west);
+\draw[flow] (sgSoftB.east) -- (sgTB2.west);
+\node[anchor=north,font=\small,text=muted] at (12.3,4.86) {Again, one row};
+\node[anchor=north,font=\small,text=muted] at (20.75,4.86) {Learned from sample A and earlier samples};
+
+% Takeaway strip
+\filldraw[draw=teal!65,fill=selectA,rounded corners=7pt] (0.7,0.68) rectangle (31.9,3.28);
+\node[anchor=west,font=\bfseries\large] at (1.2,2.73) {CBOW versus Skip-gram};
+\node[anchor=west,font=\normalsize] at (1.2,2.13)
+  {CBOW: several context rows $\rightarrow$ one average $h$ $\rightarrow$ one prediction (the center word).};
+\node[anchor=west,font=\normalsize] at (1.2,1.56)
+  {Skip-gram: one center row $\rightarrow$ $h=e_{\rm center}$ $\rightarrow$ one prediction per context word, all from the same $p$.};
+\node[anchor=west,font=\bfseries\normalsize,text=teal] at (1.2,1.02)
+  {Both store and train the same two tables, $W_{\rm in}$ and $W_{\rm out}$; only the direction of prediction changes.};
+\end{tikzpicture}
+
+
+
+% ============ PAGE 7: SKIP-GRAM MATRIX FORMULATION, C = 7 ============
+\begin{tikzpicture}[x=1cm,y=1cm,font=\sffamily,text=ink]
+\fill[white] (0,0) rectangle (32.6,19.1);
+\node[anchor=west,font=\bfseries\LARGE] at (1.0,18.45)
+  {Skip-gram as matrix multiplication: one center word, seven targets};
+\node[anchor=west,font=\normalsize,text=muted] at (1.0,17.83)
+  {A one-hot vector selects a single row of $W_{\rm in}$; the same output distribution is scored against every context word.};
+
+% SECTION 1: ONE-HOT INPUT
+\filldraw[draw=line,fill=panelbg,rounded corners=8pt] (0.7,12.85) rectangle (31.9,17.26);
+\node[anchor=west,font=\bfseries\large] at (1.25,16.82) {1. One-hot input, and seven training pairs};
+\node[anchor=west,font=\small,text=muted] at (1.45,16.17)
+  {Same sentence as page 4: ``small cat quietly [sat] on the soft mat''; the center is sat, $C=7$ and $V=9$.};
+
+\foreach \w/\idx/\flag in {small/0/0,cat/1/0,quietly/2/0,sat/3/1,on/4/0,the/5/0,soft/6/0,mat/7/0,dog/8/0}{
+  \pgfmathsetmacro{\xx}{2.12+1.65*\idx}
+  \node[font=\scriptsize\bfseries] at (\xx,15.44) {\w};
+  \ifnum\flag=1
+    \filldraw[draw=teal,fill=selectA,rounded corners=2pt] (\xx-0.68,14.30) rectangle (\xx+0.68,15.12);
+  \else
+    \filldraw[draw=line,fill=white,rounded corners=2pt] (\xx-0.68,14.30) rectangle (\xx+0.68,15.12);
+  \fi
+  \node[font=\large] at (\xx,14.71) {$\flag$};
+}
+\node[anchor=west,font=\small\bfseries,text=teal] at (1.50,13.71)
+  {$\boldsymbol x=[0,0,0,1,0,0,0,0,0]$: one-hot center vector, $1\times V$.};
+\draw[draw=line,line width=.7pt] (17.70,13.52)--(17.70,16.04);
+\node[anchor=west,font=\bfseries\normalsize] at (18.35,15.96) {No averaging, no scale factor};
+\node[anchor=west,font=\normalsize] at (18.35,15.18)
+  {$\displaystyle \boldsymbol h=\boldsymbol xW_{\rm in}=\boldsymbol e_{\rm sat}$};
+\node[anchor=west,font=\normalsize] at (18.35,14.40)
+  {Pairs: (sat, small), (sat, cat), $\ldots$, (sat, mat)};
+\node[anchor=west,font=\small,text=muted] at (18.35,13.64)
+  {Seven targets share one $\boldsymbol h$ and therefore one $\boldsymbol p$.};
+
+% SECTION 2: MAIN MATRIX PIPELINE
+\filldraw[draw=line,fill=panelbg,rounded corners=8pt] (0.7,6.65) rectangle (31.9,12.52);
+\node[anchor=west,font=\bfseries\large] at (1.25,12.09) {2. Forward pass: matrix multiplication and dimensions};
+\node[font=\bfseries\small,text=teal] at (3.60,11.23) {One-hot center word};
+\node[box,draw=teal,fill=selectA,minimum width=4.6cm,minimum height=1.15cm] at (3.60,9.67)
+  {$\boldsymbol x$ \small(a single 1)};
+\node[font=\small,text=muted] at (3.60,8.90) {$1\times V$};
+\node[font=\huge] at (6.62,9.72) {$\times$};
+\node[font=\bfseries\small,text=blue] at (10.44,11.39) {Input embedding matrix};
+\filldraw[draw=blue,fill=white,rounded corners=4pt] (7.61,7.99) rectangle (13.26,11.12);
+\foreach \w/\idx/\flag in {small/0/0,cat/1/0,quietly/2/0,sat/3/1,on/4/0,the/5/0,soft/6/0,mat/7/0,dog/8/0}{
+  \pgfmathsetmacro{\yy}{10.88-0.315*\idx}
+  \ifnum\flag=1
+    \fill[selectA] (7.64,\yy-0.145) rectangle (13.22,\yy+0.145);
+  \fi
+  \node[anchor=west,font=\scriptsize\bfseries] at (7.89,\yy) {\w};
+  \node[anchor=west,font=\scriptsize] at (9.63,\yy) {$w_{\mathrm{\w},1}\ \cdots\ w_{\mathrm{\w},d}$};
+}
+\node[font=\small,text=muted] at (10.44,7.69) {$W_{\rm in}\in\mathbb R^{V\times d}$};
+\node[font=\huge] at (14.17,9.71) {$=$};
+\node[font=\bfseries\small,text=violet] at (16.35,11.23) {Center embedding};
+\node[box,draw=violet,fill=paleviolet,minimum width=2.95cm,minimum height=1.1cm] at (16.35,9.68)
+  {$\boldsymbol h=\boldsymbol e_{\rm sat}$};
+\node[font=\small,text=muted] at (16.35,8.90) {$1\times d$};
+\node[font=\huge] at (18.63,9.72) {$\times$};
+\node[font=\bfseries\small,text=violet] at (21.45,11.23) {Output layer};
+\filldraw[draw=violet,fill=paleviolet,rounded corners=4pt] (19.56,8.40) rectangle (23.34,10.97);
+\foreach \x in {20.03,20.64,21.25,21.86,22.47,23.08}{
+  \draw[draw=violet!40,line width=.35pt] (\x,8.55)--(\x,10.82);
+}
+\foreach \y in {9.05,9.64,10.23}{
+  \draw[draw=violet!40,line width=.35pt] (19.73,\y)--(23.15,\y);
+}
+\node[fill=paleviolet,inner sep=1pt,font=\bfseries\normalsize] at (21.45,9.65) {$W_{\rm out}^{T}$};
+\node[font=\small,text=muted] at (21.45,7.92) {$d\times V$};
+\node[font=\huge] at (24.25,9.72) {$=$};
+\node[font=\bfseries\small,text=blue] at (27.90,11.23) {Vocabulary logits};
+\node[box,draw=blue,fill=selectB,minimum width=4.3cm,minimum height=1.1cm] (sgmz) at (27.90,9.70)
+  {$\boldsymbol z=[z_1,\ldots,z_V]$};
+\node[font=\small,text=muted,anchor=west] at (30.25,9.70) {$1\times V$};
+\node[box,draw=blue,fill=white,minimum width=4.7cm,minimum height=0.72cm]
+  (sgprob) at (27.90,7.67) {$\boldsymbol p=\operatorname{softmax}(\boldsymbol z)$};
+\draw[->,draw=blue,line width=1pt] (sgmz.south) -- (sgprob.north);
+\node[anchor=west,font=\small,text=muted] at (1.60,7.14)
+  {Identical to CBOW except the input: $\boldsymbol x$ has a single 1 and no $1/C$ factor. The result still has $d$ components.};
+
+% SECTION 3: LOSS AND GRADIENT
+\filldraw[draw=pink!55,fill=palepink,rounded corners=8pt] (0.7,3.03) rectangle (31.9,6.38);
+\node[anchor=west,font=\bfseries\large] at (1.25,5.95) {3. Seven losses, one input row};
+\node[anchor=west,font=\normalsize] at (1.50,5.25)
+  {$L=-\sum_{j=1}^{7}\log p_{c_j}, \qquad
+    \partial L/\partial\boldsymbol z=7\boldsymbol p-\sum_{j=1}^{7}\boldsymbol y_{c_j}$};
+\node[anchor=west,font=\normalsize] at (1.50,4.25)
+  {$\displaystyle \boldsymbol g=\frac{\partial L}{\partial\boldsymbol z}W_{\rm out}\in\mathbb R^{1\times d},\qquad
+    \frac{\partial L}{\partial W_{\rm in}}=\underbrace{\boldsymbol x^T}_{V\times1}\;\underbrace{\boldsymbol g}_{1\times d}$};
+\node[anchor=west,font=\small,text=muted] at (1.50,3.35)
+  {$\boldsymbol y_{c_j}$ is the one-hot vector of the $j$-th context word.};
+\node[anchor=west,font=\bfseries\small] at (15.30,5.36) {The nine input-embedding gradient rows};
+\node[anchor=west,font=\normalsize,text=teal] at (15.30,4.68)
+  {Center word (sat): $\boldsymbol g$, the sum of seven signals};
+\node[anchor=west,font=\normalsize,text=muted] at (15.30,3.97)
+  {Other 8 words: $\boldsymbol 0$ per row};
+\node[anchor=west,font=\normalsize] at (24.60,5.10) {Compare CBOW (page 4):};
+\node[anchor=west,font=\normalsize] at (24.60,4.55) {seven rows, each $\boldsymbol g/7$.};
+\node[anchor=west,font=\small,text=muted] at (24.60,3.71) {$W_{\rm out}$ also trains on this step.};
+
+% BOTTOM
+\filldraw[draw=teal!65,fill=selectA,rounded corners=7pt] (0.7,0.68) rectangle (31.9,2.73);
+\node[anchor=west,font=\bfseries\large] at (1.25,2.27) {One-line summary};
+\node[anchor=west,font=\large\bfseries,text=teal] at (7.3,2.27)
+  {$\boldsymbol p=\operatorname{softmax}\!\left(\boldsymbol xW_{\rm in}W_{\rm out}^{T}\right)$, scored against each of the $C$ context words};
+\node[anchor=west,font=\normalsize] at (1.25,1.63)
+  {Same factorization $M=W_{\rm in}W_{\rm out}^T$ as CBOW: with a one-hot input, $\boldsymbol z$ is simply the row of $M$ belonging to the center word.};
+\node[anchor=west,font=\small,text=muted] at (1.25,1.10)
+  {Standard full-softmax Skip-gram shown. word2vec in practice uses negative sampling or hierarchical softmax, and samples the window size.};
+\end{tikzpicture}
+
+
+
+% ============ PAGE 8: CBOW VS SKIP-GRAM SIDE BY SIDE ============
+\begin{tikzpicture}[x=1cm,y=1cm,font=\sffamily,text=ink]
+\fill[white] (0,0) rectangle (32.6,19.1);
+\node[anchor=west,font=\bfseries\LARGE] at (1.0,18.45)
+  {CBOW and Skip-gram: same tables, opposite direction};
+\node[anchor=west,font=\normalsize,text=muted] at (1.0,17.83)
+  {Both models are trained with one sliding context window; they differ in which side of the window is the input.};
+
+% SECTION 1: COMPARISON TABLE
+\filldraw[draw=line,fill=panelbg,rounded corners=9pt] (0.7,9.55) rectangle (31.9,17.20);
+\node[anchor=west,font=\bfseries\large] at (1.22,16.77) {1. One window, two training recipes};
+\filldraw[fill=white,draw=line,rounded corners=5pt] (1.20,9.90) rectangle (31.40,16.25);
+\fill[selectA] (9.40,15.45) rectangle (20.20,16.15);
+\fill[selectB] (20.40,15.45) rectangle (31.30,16.15);
+\node[anchor=west,font=\bfseries\normalsize,text=muted] at (1.55,15.80) {Aspect};
+\node[anchor=west,font=\bfseries\normalsize,text=teal] at (9.70,15.80) {CBOW};
+\node[anchor=west,font=\bfseries\normalsize,text=blue] at (20.70,15.80) {Skip-gram};
+\foreach \aspect/\cbow/\sg [count=\i from 0] in {
+  {Prediction}/{context words $\rightarrow$ center word}/{center word $\rightarrow$ each context word},
+  {Rows of $W_{\rm in}$ read}/{$C$ rows, averaged}/{1 row, copied},
+  {Hidden vector $\boldsymbol h$}/{$\frac1C(\boldsymbol e_{c_1}+\cdots+\boldsymbol e_{c_C})$}/{$\boldsymbol e_{\rm center}$},
+  {Loss terms per window}/{1 (the center word)}/{$C$ (one per context word)},
+  {$W_{\rm in}$ gradient}/{$C$ rows, each $\boldsymbol g/C$}/{1 row, the sum of $C$ signals},
+  {Cost per window}/{lower: one prediction}/{higher: $C$ predictions},
+  {Usual strength}/{fast; smooths over the context}/{better vectors for rare words},
+  {Kept after training}/{$W_{\rm in}$}/{$W_{\rm in}$}}
+{
+  \pgfmathsetmacro{\yy}{14.95-0.68*\i}
+  \draw[draw=line!70,line width=.3pt] (1.40,\yy+0.34) -- (31.20,\yy+0.34);
+  \node[anchor=west,font=\bfseries\small] at (1.55,\yy) {\aspect};
+  \node[anchor=west,font=\small] at (9.70,\yy) {\cbow};
+  \node[anchor=west,font=\small] at (20.70,\yy) {\sg};
+}
+\draw[draw=line!70,line width=.3pt] (9.40,10.00) -- (9.40,16.15);
+\draw[draw=line!70,line width=.3pt] (20.30,10.00) -- (20.30,16.15);
+
+% SECTION 2: SAME LOW-RANK MODEL
+\filldraw[draw=teal!60,fill=selectA,rounded corners=8pt] (0.7,5.85) rectangle (31.9,9.20);
+\node[anchor=west,font=\bfseries\large] at (1.23,8.72)
+  {2. One low-rank model, two kinds of input};
+\node[anchor=west,font=\bfseries\normalsize,text=teal] at (1.54,7.95) {CBOW};
+\node[anchor=west,font=\normalsize] at (1.54,7.30)
+  {$\displaystyle \boldsymbol p=\operatorname{softmax}(\boldsymbol bW_{\rm in}W_{\rm out}^{T}),\quad \boldsymbol b=\boldsymbol s/C$ (averaged bag of words)};
+\node[anchor=west,font=\bfseries\normalsize,text=blue] at (17.00,7.95) {Skip-gram};
+\node[anchor=west,font=\normalsize] at (17.00,7.30)
+  {$\displaystyle \boldsymbol p=\operatorname{softmax}(\boldsymbol xW_{\rm in}W_{\rm out}^{T}),\quad \boldsymbol x$ one-hot (single word)};
+\draw[draw=teal!40,line width=0.7pt] (16.40,6.95) -- (16.40,8.25);
+\node[anchor=west,font=\normalsize,text=muted] at (1.54,6.32)
+  {Both learn the same factorized matrix $M=W_{\rm in}W_{\rm out}^{T}$ with $\operatorname{rank}(M)\le d$; only the input vector that multiplies it changes.};
+
+% SECTION 3: RARE-WORD INTUITION
+\filldraw[draw=pink!55,fill=palepink,rounded corners=8pt] (0.7,3.07) rectangle (31.9,5.50);
+\node[anchor=west,font=\bfseries\large] at (1.23,5.03)
+  {3. Why Skip-gram tends to help rare words (a common intuition)};
+\node[anchor=west,font=\normalsize] at (1.54,4.33)
+  {CBOW: a rare word is one of $C$ inputs; its signal is mixed into an average dominated by frequent neighbours, and its row gets $\boldsymbol g/C$.};
+\node[anchor=west,font=\normalsize] at (1.54,3.65)
+  {Skip-gram: each occurrence of a rare word makes it THE input for $C$ separate targets, so its row receives every signal undiluted.};
+
+% BOTTOM
+\filldraw[draw=teal!60,fill=selectA,rounded corners=7pt] (0.7,0.73) rectangle (31.9,2.72);
+\node[anchor=west,font=\bfseries\large] at (1.25,2.21) {Main idea};
+\node[anchor=west,font=\normalsize] at (5.0,2.21)
+  {CBOW asks ``which word fits this context?''; Skip-gram asks ``which words surround this word?''.};
+\node[anchor=west,font=\bfseries\normalsize,text=teal] at (1.25,1.40)
+  {Either way, the prediction task is a scaffold: the lasting product is the embedding table $W_{\rm in}$.};
+\end{tikzpicture}
 \end{document}
