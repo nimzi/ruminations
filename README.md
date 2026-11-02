@@ -142,12 +142,13 @@ computes. Covers:
 **Folder**: `cbow-embeddings/`
 **Files**: `cbow_dynamic_connections.tex`, `cbow_dynamic_connections.pdf`
 
-A nine-page set of TikZ explainer slides on Continuous Bag of Words (word2vec CBOW) training, with a Skip-gram companion,
+A ten-page set of TikZ explainer slides on Continuous Bag of Words (word2vec CBOW) training, with a Skip-gram companion,
 aimed at a common confusion: each context window seems to "rewire" the network, yet the model's
 parameters are fixed tables that persist between samples. Covers:
 
 - An opening setup slide: a toy token stream, its vocabulary (one row of $W_{\rm in}$ per word), and a radius-1 window sliding one token at a time, producing the two samples traced on the next slide
 - Two consecutive training samples selecting different rows of the same embedding table $W_{\rm in}$, with the shared output layer $W_{\rm out}$ reused unchanged
+- The MLP interpretation in detail: a word is only its index (the string never enters training), a standard MLP for comparison, CBOW drawn as an MLP whose input layer is swapped every step, and the averaging stage recast as average pooling (as in CNN max/avg pooling and GAP), with CBOW mirroring a CNN head: pooled features → linear layer → softmax
 - A worked numerical example showing the context average is taken coordinate by coordinate, giving a $d$-vector rather than a scalar
 - Why backpropagation sends $\tfrac{1}{C}\,\partial L/\partial h$ to each selected embedding row and nothing to unused rows
 - The matrix form with seven context words: a binary selection vector $\boldsymbol s$, averaging as the scale factor $1/C$, and the sparse outer-product gradient $\partial L/\partial W_{\rm in} = \boldsymbol b^{\mathsf T}\boldsymbol g$
@@ -157,7 +158,7 @@ parameters are fixed tables that persist between samples. Covers:
 - Skip-gram in matrix form, $\boldsymbol p=\operatorname{softmax}(\boldsymbol xW_{\rm in}W_{\rm out}^{\mathsf T})$ with a one-hot input, and its loss gradient $\partial L/\partial\boldsymbol z = C\boldsymbol p-\sum_j \boldsymbol y_{c_j}$
 - A side-by-side CBOW vs. Skip-gram comparison: same low-rank factorization, different input vector, and the usual intuition for why Skip-gram helps rare words
 
-**Key concepts**: Word embeddings, word2vec, CBOW, Skip-gram, embedding lookup as one-hot matrix multiplication, sparse gradients, softmax classification, low-rank factorization
+**Key concepts**: Word embeddings, word2vec, CBOW, Skip-gram, embedding lookup as one-hot matrix multiplication, sparse gradients, average pooling, softmax classification, low-rank factorization
 
 ## Future Directions
 
