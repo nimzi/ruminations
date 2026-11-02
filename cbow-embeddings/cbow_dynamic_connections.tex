@@ -41,6 +41,114 @@
 }
 
 \begin{document}
+% ============ SLIDE 0: SETUP, CORPUS AND SLIDING WINDOW ============
+\tikzset{
+  tok/.style={draw=line,fill=white,rounded corners=2pt,minimum width=1.45cm,minimum height=0.62cm,font=\small\bfseries,inner sep=1pt},
+  tokOut/.style={tok,text=muted},
+  tokCtxA/.style={tok,draw=teal,fill=selectA,text=teal},
+  tokCtxB/.style={tok,draw=blue,fill=selectB,text=blue},
+  tokCtxN/.style={tok,draw=teal!45,fill=selectA!55,text=ink},
+  tokTgtF/.style={tok,draw=pink,fill=palepink,text=pink,line width=.9pt},
+  tokTgtN/.style={tok,draw=pink!45,fill=palepink!60,text=ink},
+  mini/.style={draw=line,fill=white,rounded corners=4pt,align=center,minimum width=3.9cm,minimum height=0.85cm,font=\small},
+}
+\begin{tikzpicture}[x=1cm,y=1cm,font=\sffamily,text=ink]
+\fill[white] (0,0) rectangle (32.6,19.1);
+\node[anchor=west,font=\bfseries\LARGE] at (1,18.45)
+  {CBOW setup: from running text to training samples};
+\node[anchor=west,text=muted,font=\normalsize] at (1,17.83)
+  {A window slides over the text one token at a time; every position turns into one (context $\rightarrow$ target) example for the same network.};
+
+% --- Panel 1: corpus and vocabulary ---
+\filldraw[fill=panelbg,draw=line,rounded corners=9pt] (0.7,12.95) rectangle (31.9,17.25);
+\node[anchor=west,font=\bfseries\large] at (1.2,16.78) {1. A corpus and its vocabulary};
+\node[anchor=west,font=\bfseries\normalsize] at (1.5,15.95) {Toy corpus as a token stream};
+\node[anchor=west,text=muted,font=\small] at (1.5,15.55) {Tokenized and lower-cased; articles dropped to keep the vocabulary small};
+\foreach \w [count=\k from 1] in {cat,sat,on,mat,dog,sat,in,mat}{
+  \pgfmathsetmacro{\xx}{3.6+1.62*(\k-1)}
+  \node[tok] at (\xx,14.55) {\w};
+  \node[font=\scriptsize,text=muted] at (\xx,13.90) {$t=\k$};
+}
+\draw[draw=line,line width=.7pt] (17.20,13.30)--(17.20,16.15);
+\node[anchor=west,font=\bfseries\normalsize] at (17.70,15.95) {Vocabulary: $V=6$ distinct words};
+\foreach \w [count=\k from 1] in {cat,dog,sat,on,in,mat}{
+  \pgfmathsetmacro{\xx}{18.70+2.10*(\k-1)}
+  \node[tok,minimum width=1.85cm] at (\xx,14.95) {\w};
+  \node[font=\scriptsize,text=muted] at (\xx,14.40) {row \k};
+}
+\node[anchor=west,font=\small] at (17.70,13.85)
+  {Each word owns one trainable row $\boldsymbol e_w$ of $W_{\rm in}$, and one row of $W_{\rm out}$.};
+\node[anchor=west,font=\small,text=muted] at (17.70,13.35)
+  {Repeated tokens (sat, mat) reuse the same row.};
+
+% --- Panel 2: sliding window ---
+\filldraw[fill=panelbg,draw=line,rounded corners=9pt] (0.7,4.55) rectangle (31.9,12.70);
+\node[anchor=west,font=\bfseries\large] at (1.2,12.23)
+  {2. The window slides one token at a time};
+\node[anchor=west,font=\normalsize] at (11.0,12.23)
+  {radius $m=1$: one word on each side, so $C=2m=2$ context words};
+% legend
+\node[tokCtxN,minimum width=1.0cm,minimum height=0.42cm] at (24.10,12.23) {};
+\node[anchor=west,font=\small] at (24.70,12.23) {context};
+\node[tokTgtN,minimum width=1.0cm,minimum height=0.42cm] at (27.05,12.23) {};
+\node[anchor=west,font=\small] at (27.65,12.23) {target (center)};
+
+\foreach \t/\ctx/\tgt/\kind [count=\r from 0] in {
+  2/{cat, on}/sat/1, 3/{sat, mat}/on/0, 4/{on, dog}/mat/0,
+  5/{mat, sat}/dog/0, 6/{dog, in}/sat/2, 7/{sat, mat}/in/0}
+{
+  \pgfmathsetmacro{\yy}{10.45-0.96*\r}
+  \ifcase\kind
+    \def\cst{tokCtxN}\def\tst{tokTgtN}\or
+    \def\cst{tokCtxA}\def\tst{tokTgtF}\or
+    \def\cst{tokCtxB}\def\tst{tokTgtF}\fi
+  \node[font=\small,text=muted] at (1.75,\yy) {$t=\t$};
+  \foreach \w [count=\k from 1] in {cat,sat,on,mat,dog,sat,in,mat}{
+    \pgfmathsetmacro{\xx}{3.6+1.62*(\k-1)}
+    \pgfmathtruncatemacro{\ad}{abs(\k-\t)}
+    \ifnum\ad=0 \node[\tst] at (\xx,\yy) {\w};
+    \else\ifnum\ad=1 \node[\cst] at (\xx,\yy) {\w};
+    \else \node[tokOut] at (\xx,\yy) {\w};
+    \fi\fi
+  }
+  \ifcase\kind
+    \node[anchor=west,font=\small,text=muted] at (17.2,\yy) {context (\ctx) $\rightarrow$ target \tgt};
+    \node[anchor=west,font=\small,text=muted] at (25.2,\yy) {also a training sample};
+  \or
+    \node[anchor=west,font=\small] at (17.2,\yy) {context (\textcolor{teal}{\textbf{cat}}, \textcolor{teal}{\textbf{on}}) $\rightarrow$ target \textbf{sat}};
+    \node[anchor=west,font=\small\bfseries,text=teal] at (25.2,\yy) {sample A $\rightarrow$ next slide, part 1};
+  \or
+    \node[anchor=west,font=\small] at (17.2,\yy) {context (\textcolor{blue}{\textbf{dog}}, \textcolor{blue}{\textbf{in}}) $\rightarrow$ target \textbf{sat}};
+    \node[anchor=west,font=\small\bfseries,text=blue] at (25.2,\yy) {sample B $\rightarrow$ next slide, part 3};
+  \fi
+}
+% window brace on the first row
+\draw[decorate,decoration={brace,amplitude=5pt},draw=teal,line width=.8pt]
+  (2.85,10.88) -- (7.59,10.88);
+\node[font=\scriptsize,text=teal] at (5.22,11.40) {window of width $2m+1=3$};
+% slide arrow down the left margin
+\draw[->,draw=muted,line width=1.0pt] (1.05,10.45) -- (1.05,5.65);
+\node[anchor=west,font=\small,text=muted] at (1.25,4.92)
+  {Edge positions $t=1$ and $t=8$ have a neighbour on one side only; implementations shorten the window there. One pass over all positions is an epoch.};
+
+% --- Bottom strip: the loop that slide 1 traces ---
+\filldraw[draw=teal!65,fill=selectA,rounded corners=7pt] (0.7,0.68) rectangle (31.9,4.25);
+\node[anchor=west,font=\bfseries\large] at (1.2,3.80) {3. What happens at every window position};
+\node[mini] (m1) at (3.30,2.75) {Take window at $t$};
+\node[mini,draw=teal,fill=white] (m2) at (8.05,2.75) {Look up context rows\\[-.3mm]\scriptsize of $W_{\rm in}$};
+\node[mini,draw=violet,fill=paleviolet] (m3) at (12.80,2.75) {Average $\rightarrow h$};
+\node[mini,draw=violet,fill=paleviolet] (m4) at (17.55,2.75) {$W_{\rm out}$ + softmax};
+\node[mini,draw=pink,fill=palepink] (m5) at (22.30,2.75) {Loss vs. target};
+\node[mini,draw=pink,fill=white] (m6) at (27.05,2.75) {SGD update\\[-.3mm]\scriptsize used rows + $W_{\rm out}$};
+\foreach \a/\b in {m1/m2,m2/m3,m3/m4,m4/m5,m5/m6}{\draw[flow] (\a.east) -- (\b.west);}
+\draw[flow] (m6.south) -- ++(0,-0.45) -| (m1.south);
+\node[fill=selectA,inner sep=2pt,font=\small,text=muted] at (15.18,1.875) {slide: $t\rightarrow t+1$, same tables};
+\node[anchor=west,font=\bfseries\normalsize,text=teal] at (1.2,1.12)
+  {The next slide follows samples A and B through one pass of this loop; $W_{\rm in}$ and $W_{\rm out}$ persist across all windows.};
+\end{tikzpicture}
+
+
+
 \begin{tikzpicture}[x=1cm,y=1cm,font=\sffamily,text=ink]
 
 % Canvas = 32.6 x 19.1 cm. This standalone figure scales well in PDF.
@@ -761,7 +869,7 @@
 \filldraw[draw=line,fill=panelbg,rounded corners=8pt] (0.7,12.85) rectangle (31.9,17.26);
 \node[anchor=west,font=\bfseries\large] at (1.25,16.82) {1. One-hot input, and seven training pairs};
 \node[anchor=west,font=\small,text=muted] at (1.45,16.17)
-  {Same sentence as page 4: ``small cat quietly [sat] on the soft mat''; the center is sat, $C=7$ and $V=9$.};
+  {Same sentence as the CBOW matrix slide: ``small cat quietly [sat] on the soft mat''; the center is sat, $C=7$ and $V=9$.};
 
 \foreach \w/\idx/\flag in {small/0/0,cat/1/0,quietly/2/0,sat/3/1,on/4/0,the/5/0,soft/6/0,mat/7/0,dog/8/0}{
   \pgfmathsetmacro{\xx}{2.12+1.65*\idx}
@@ -846,7 +954,7 @@
   {Center word (sat): $\boldsymbol g$, the sum of seven signals};
 \node[anchor=west,font=\normalsize,text=muted] at (15.30,3.97)
   {Other 8 words: $\boldsymbol 0$ per row};
-\node[anchor=west,font=\normalsize] at (24.60,5.10) {Compare CBOW (page 4):};
+\node[anchor=west,font=\normalsize] at (24.60,5.10) {Compare CBOW (matrix slide):};
 \node[anchor=west,font=\normalsize] at (24.60,4.55) {seven rows, each $\boldsymbol g/7$.};
 \node[anchor=west,font=\small,text=muted] at (24.60,3.71) {$W_{\rm out}$ also trains on this step.};
 
